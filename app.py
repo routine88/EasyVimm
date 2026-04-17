@@ -101,11 +101,25 @@ def api_open_current():
     return jsonify({"opened": True, "url": current["url"]})
 
 
+def _open_browser_soon(url: str, delay: float = 1.0) -> None:
+    def _open():
+        try:
+            webbrowser.open_new(url)
+        except Exception:  # noqa: BLE001
+            pass
+    threading.Timer(delay, _open).start()
+
+
 def main():
     threading.Thread(target=watcher_loop, daemon=True).start()
-    print(f"EasyVimm running on http://127.0.0.1:5000")
-    print(f"  watching: {config['downloads_folder']}")
-    print(f"  output:   {config['output_folder']}")
+    url = "http://127.0.0.1:5000"
+    print("")
+    print(f"  EasyVimm is running.")
+    print(f"  If your browser does not open on its own, go to: {url}")
+    print(f"  Downloads folder: {config['downloads_folder']}")
+    print(f"  ROMs will be saved to: {config['output_folder']}")
+    print("")
+    _open_browser_soon(url)
     app.run(host="127.0.0.1", port=5000, debug=False, use_reloader=False)
 
 

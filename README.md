@@ -20,9 +20,20 @@ The flow:
    game's title, and moves it into the right console folder.
 6. The next ROM tab opens automatically (optional) and you keep going.
 
-## Install
+## Quickstart (the easy way)
 
-Requires Python 3.10+.
+1. Install [Python 3.10 or newer](https://www.python.org/downloads/).
+   On Windows, **check the box "Add python.exe to PATH"** during install.
+2. Download this project ([Code → Download ZIP](https://github.com/routine88/easyvimm)
+   or `git clone`) and unzip it somewhere you can find again (e.g. your Desktop).
+3. Double-click the launcher for your OS:
+   - **Windows:** `EasyVimm.bat`
+   - **macOS / Linux:** `EasyVimm.command`
+
+The launcher sets up everything on first run, checks GitHub for updates on
+every launch, starts the app, and opens your browser automatically.
+
+## Manual install (advanced)
 
 ```bash
 git clone https://github.com/routine88/easyvimm.git
@@ -30,12 +41,6 @@ cd easyvimm
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp config.example.json config.json  # then edit paths
-```
-
-## Run
-
-```bash
 python app.py
 ```
 
