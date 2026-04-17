@@ -32,6 +32,44 @@ main { max-width: 960px; margin: 0 auto; padding: 1.5rem; }
 
 h2 { margin-top: 2rem; font-size: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
 
+.summary-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.25rem 0;
+}
+.summary-row code {
+  font-size: 0.85rem;
+  word-break: break-all;
+  text-align: right;
+}
+.summary-label { color: var(--muted); font-size: 0.85rem; flex-shrink: 0; }
+.link-button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  padding: 0.5rem 0;
+  margin: 0.25rem 0 0;
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-decoration: underline;
+}
+.link-button:hover { color: var(--accent-hover); }
+
+#advanced-panel {
+  border-left: 3px solid var(--border);
+  padding-left: 1rem;
+  margin: 0 0 1.5rem;
+}
+
 .config-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

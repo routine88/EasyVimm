@@ -14,28 +14,44 @@
 
   <main>
     <section id="setup-panel">
-      <h2>1. Settings</h2>
-      <div class="config-grid">
-        <label>Downloads folder
-          <input id="cfg-downloads" type="text" />
-        </label>
-        <label>Output folder
-          <input id="cfg-output" type="text" />
-        </label>
-        <label>Naming convention
-          <select id="cfg-naming">
-            <option value="miyoo_onion">Miyoo Mini Plus (OnionOS)</option>
-            <option value="miyoo_stock">Miyoo Mini (Stock)</option>
-            <option value="retroarch">RetroArch / Libretro</option>
-            <option value="es_de">EmulationStation-DE</option>
-          </select>
-        </label>
-        <label class="checkbox">
-          <input id="cfg-auto-open" type="checkbox" />
-          Auto-open next ROM tab on start
-        </label>
+      <h2>1. Where your games go</h2>
+      <div class="summary-card">
+        <div class="summary-row">
+          <span class="summary-label">Downloads come from</span>
+          <code id="summary-downloads">—</code>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">ROMs will be saved to</span>
+          <code id="summary-output">—</code>
+        </div>
+        <button id="toggle-advanced" class="link-button" type="button">
+          Change these settings
+        </button>
       </div>
-      <button id="save-config-btn">Save settings</button>
+
+      <div id="advanced-panel" hidden>
+        <div class="config-grid">
+          <label>Downloads folder
+            <input id="cfg-downloads" type="text" />
+          </label>
+          <label>Output folder
+            <input id="cfg-output" type="text" />
+          </label>
+          <label>Naming convention
+            <select id="cfg-naming">
+              <option value="miyoo_onion">Miyoo Mini Plus (OnionOS)</option>
+              <option value="miyoo_stock">Miyoo Mini (Stock)</option>
+              <option value="retroarch">RetroArch / Libretro</option>
+              <option value="es_de">EmulationStation-DE</option>
+            </select>
+          </label>
+          <label class="checkbox">
+            <input id="cfg-auto-open" type="checkbox" />
+            Auto-open next ROM tab on start
+          </label>
+        </div>
+        <button id="save-config-btn">Save settings</button>
+      </div>
 
       <h2>2. Pick consoles</h2>
       <div id="console-grid" class="console-grid">Loading…</div>

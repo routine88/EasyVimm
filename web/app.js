@@ -24,7 +24,16 @@ async function loadConfig() {
   $("cfg-output").value = state.config.output_folder;
   $("cfg-naming").value = state.config.naming_convention;
   $("cfg-auto-open").checked = !!state.config.auto_open_next;
+  $("summary-downloads").textContent = state.config.downloads_folder;
+  $("summary-output").textContent = state.config.output_folder;
   $("footer-output").textContent = state.config.output_folder;
+}
+
+function toggleAdvanced() {
+  const panel = $("advanced-panel");
+  const btn = $("toggle-advanced");
+  panel.hidden = !panel.hidden;
+  btn.textContent = panel.hidden ? "Change these settings" : "Hide settings";
 }
 
 async function saveConfig() {
@@ -38,6 +47,8 @@ async function saveConfig() {
     method: "POST",
     body: JSON.stringify(payload),
   });
+  $("summary-downloads").textContent = state.config.downloads_folder;
+  $("summary-output").textContent = state.config.output_folder;
   $("footer-output").textContent = state.config.output_folder;
   flash("Settings saved.");
 }
@@ -202,6 +213,7 @@ function flash(msg) {
 
 function wire() {
   $("save-config-btn").addEventListener("click", saveConfig);
+  $("toggle-advanced").addEventListener("click", toggleAdvanced);
   $("start-btn").addEventListener("click", startSession);
   $("open-btn").addEventListener("click", openCurrent);
   $("skip-btn").addEventListener("click", skipCurrent);
