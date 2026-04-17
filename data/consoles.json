@@ -1,0 +1,123 @@
+{
+  "NES": {
+    "display_name": "Nintendo Entertainment System",
+    "vimm_system": "NES",
+    "extensions": [".nes", ".zip", ".7z"],
+    "folders": {
+      "miyoo_onion": "FC",
+      "miyoo_stock": "FC",
+      "retroarch": "Nintendo - Nintendo Entertainment System",
+      "es_de": "nes"
+    }
+  },
+  "SNES": {
+    "display_name": "Super Nintendo",
+    "vimm_system": "SNES",
+    "extensions": [".smc", ".sfc", ".zip", ".7z"],
+    "folders": {
+      "miyoo_onion": "SFC",
+      "miyoo_stock": "SFC",
+      "retroarch": "Nintendo - Super Nintendo Entertainment System",
+      "es_de": "snes"
+    }
+  },
+  "GB": {
+    "display_name": "Game Boy",
+    "vimm_system": "GB",
+    "extensions": [".gb", ".zip", ".7z"],
+    "folders": {
+      "miyoo_onion": "GB",
+      "miyoo_stock": "GB",
+      "retroarch": "Nintendo - Game Boy",
+      "es_de": "gb"
+    }
+  },
+  "GBC": {
+    "display_name": "Game Boy Color",
+    "vimm_system": "GBC",
+    "extensions": [".gbc", ".zip", ".7z"],
+    "folders": {
+      "miyoo_onion": "GBC",
+      "miyoo_stock": "GBC",
+      "retroarch": "Nintendo - Game Boy Color",
+      "es_de": "gbc"
+    }
+  },
+  "GBA": {
+    "display_name": "Game Boy Advance",
+    "vimm_system": "GBA",
+    "extensions": [".gba", ".zip", ".7z"],
+    "folders": {
+      "miyoo_onion": "GBA",
+      "miyoo_stock": "GBA",
+      "retroarch": "Nintendo - Game Boy Advance",
+      "es_de": "gba"
+    }
+  },
+  "N64": {
+    "display_name": "Nintendo 64",
+    "vimm_system": "N64",
+    "extensions": [".n64", ".z64", ".v64", ".zip", ".7z"],
+    "folders": {
+      "miyoo_onion": "N64",
+      "miyoo_stock": "N64",
+      "retroarch": "Nintendo - Nintendo 64",
+      "es_de": "n64"
+    }
+  },
+  "Genesis": {
+    "display_name": "Sega Genesis / Mega Drive",
+    "vimm_system": "Genesis",
+    "extensions": [".md", ".gen", ".bin", ".smd", ".zip", ".7z"],
+    "folders": {
+      "miyoo_onion": "MD",
+      "miyoo_stock": "MD",
+      "retroarch": "Sega - Mega Drive - Genesis",
+      "es_de": "megadrive"
+    }
+  },
+  "MasterSystem": {
+    "display_name": "Sega Master System",
+    "vimm_system": "SMS",
+    "extensions": [".sms", ".zip", ".7z"],
+    "folders": {
+      "miyoo_onion": "MS",
+      "miyoo_stock": "MS",
+      "retroarch": "Sega - Master System - Mark III",
+      "es_de": "mastersystem"
+    }
+  },
+  "GameGear": {
+    "display_name": "Sega Game Gear",
+    "vimm_system": "GG",
+    "extensions": [".gg", ".zip", ".7z"],
+    "folders": {
+      "miyoo_onion": "GG",
+      "miyoo_stock": "GG",
+      "retroarch": "Sega - Game Gear",
+      "es_de": "gamegear"
+    }
+  },
+  "PSX": {
+    "display_name": "PlayStation",
+    "vimm_system": "PS1",
+    "extensions": [".bin", ".cue", ".iso", ".chd", ".pbp", ".zip", ".7z"],
+    "folders": {
+      "miyoo_onion": "PS",
+      "miyoo_stock": "PS",
+      "retroarch": "Sony - PlayStation",
+      "es_de": "psx"
+    }
+  },
+  "TG16": {
+    "display_name": "TurboGrafx-16 / PC Engine",
+    "vimm_system": "TG16",
+    "extensions": [".pce", ".zip", ".7z"],
+    "folders": {
+      "miyoo_onion": "PCE",
+      "miyoo_stock": "PCE",
+      "retroarch": "NEC - PC Engine - TurboGrafx 16",
+      "es_de": "tg16"
+    }
+  }
+}

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EasyVimm</title>
+  <link rel="stylesheet" href="/web/style.css" />
+</head>
+<body>
+  <header>
+    <h1>EasyVimm</h1>
+    <p class="tagline">Click-through ROM downloader for Vimm's Lair vault</p>
+  </header>
+
+  <main>
+    <section id="setup-panel">
+      <h2>1. Settings</h2>
+      <div class="config-grid">
+        <label>Downloads folder
+          <input id="cfg-downloads" type="text" />
+        </label>
+        <label>Output folder
+          <input id="cfg-output" type="text" />
+        </label>
+        <label>Naming convention
+          <select id="cfg-naming">
+            <option value="miyoo_onion">Miyoo Mini Plus (OnionOS)</option>
+            <option value="miyoo_stock">Miyoo Mini (Stock)</option>
+            <option value="retroarch">RetroArch / Libretro</option>
+            <option value="es_de">EmulationStation-DE</option>
+          </select>
+        </label>
+        <label class="checkbox">
+          <input id="cfg-auto-open" type="checkbox" />
+          Auto-open next ROM tab on start
+        </label>
+      </div>
+      <button id="save-config-btn">Save settings</button>
+
+      <h2>2. Pick consoles</h2>
+      <div id="console-grid" class="console-grid">Loading…</div>
+      <button id="start-btn" class="primary">Start session</button>
+    </section>
+
+    <section id="session-panel" hidden>
+      <h2>Session in progress</h2>
+      <div id="progress-bar"><div id="progress-fill"></div></div>
+      <p id="progress-text">—</p>
+
+      <div id="current-card" class="current-card">
+        <div class="current-meta">
+          <div class="badge" id="current-console">—</div>
+          <div class="rank" id="current-rank">—</div>
+        </div>
+        <h3 id="current-title">—</h3>
+        <div class="actions">
+          <button id="open-btn" class="primary">Open Vimm page</button>
+          <button id="skip-btn">Skip</button>
+          <button id="stop-btn" class="danger">Stop session</button>
+        </div>
+        <p class="hint">Solve any Cloudflare challenge, then click the Vimm download button.
+          When the file lands in your downloads folder, EasyVimm will detect it,
+          rename it, and move it into the right console folder.</p>
+      </div>
+
+      <h3>Recent activity</h3>
+      <ul id="history-list" class="history"></ul>
+    </section>
+
+    <section id="done-panel" hidden>
+      <h2>Session complete</h2>
+      <p id="done-summary">—</p>
+      <button id="restart-btn">Start a new session</button>
+    </section>
+  </main>
+
+  <footer>
+    <p>Files land in <code id="footer-output">—</code></p>
+  </footer>
+
+  <script src="/web/app.js"></script>
+</body>
+</html>

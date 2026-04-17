@@ -1,0 +1,105 @@
+# EasyVimm
+
+A local, click-through ROM downloader for [Vimm's Lair](https://vimm.net/vault).
+
+## Why this exists
+
+Modern Vimm scrapers keep dying because the site is fronted by Cloudflare and
+other bot-detection layers. EasyVimm takes the opposite approach: **you** stay
+in the loop, solve any Cloudflare challenge, and click the actual download
+button. EasyVimm just orchestrates the queue, watches your downloads folder,
+and files each ROM into a clean, device-ready folder structure.
+
+The flow:
+
+1. Pick the consoles you care about (NES, SNES, GBA, …).
+2. EasyVimm builds a queue from a curated list of the top games on each.
+3. For each game, it opens a tab on Vimm's vault page.
+4. You solve the Cloudflare challenge (if any) and click "Download".
+5. EasyVimm sees the new file in your downloads folder, renames it after the
+   game's title, and moves it into the right console folder.
+6. The next ROM tab opens automatically (optional) and you keep going.
+
+## Install
+
+Requires Python 3.10+.
+
+```bash
+git clone https://github.com/routine88/easyvimm.git
+cd easyvimm
+python -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp config.example.json config.json  # then edit paths
+```
+
+## Run
+
+```bash
+python app.py
+```
+
+Then open <http://127.0.0.1:5000> in your browser.
+
+## Configuration
+
+`config.json`:
+
+| Key | Meaning |
+| --- | --- |
+| `downloads_folder` | Folder EasyVimm watches for new files. Default `~/Downloads`. |
+| `output_folder`    | Where renamed ROMs land, organized by console. Default `~/EasyVimm-ROMs`. |
+| `naming_convention`| Folder naming scheme for the output. See below. |
+| `match_window_seconds` | How long after session start a file is considered "from this session". |
+| `auto_open_next`   | If true, the server pops the next vault tab automatically when a ROM is filed. |
+
+### Naming conventions
+
+Each console entry in `data/consoles.json` defines a folder name per scheme:
+
+- `miyoo_onion` – OnionOS for Miyoo Mini Plus (`FC`, `SFC`, `GB`, `GBC`, `GBA`,
+  `MD`, `PS`, …)
+- `miyoo_stock` – Stock Miyoo Mini firmware (same shortnames)
+- `retroarch`   – Libretro folder names (e.g. `Nintendo - Game Boy Advance`)
+- `es_de`       – EmulationStation-DE shortnames (`gba`, `snes`, `psx`, …)
+
+You can freely add new schemes by editing `data/consoles.json`.
+
+## How file matching works
+
+EasyVimm doesn't bypass any bot protection. After you click "Download" on
+Vimm's page, the file lands in your `downloads_folder`. The watcher loop:
+
+1. Looks for files with a modification time after the session started.
+2. Skips temporary files (`.crdownload`, `.part`, `.tmp`, etc.).
+3. Picks the newest file whose extension matches the current ROM's expected
+   extensions (e.g. `.gba`, `.zip`).
+4. Waits until the file size stops growing (download is finished).
+5. Renames it to match the curated game title.
+6. Moves it to `output_folder/<console-folder>/`.
+7. Advances the queue.
+
+If you accidentally start a different download during a session, just hit
+**Skip** to advance the queue without touching the unrelated file.
+
+## Curated lists
+
+Curated top-50 lists per console live in `data/roms_<console>.json`. Each entry
+is `{ "title": "...", "vimm_id": null }`. If you fill in `vimm_id` with the
+numeric ID from a vault URL like `https://vimm.net/vault/12345`, EasyVimm will
+open that page directly. Otherwise it falls back to a Vimm search URL using the
+title and system, and you click the right result.
+
+To add or reorder games, just edit the JSON files. To add a new console,
+append it to `data/consoles.json` and create a matching `data/roms_<key>.json`.
+
+## Limitations
+
+- This is a personal-use tool. Download only ROMs you have a legal right to
+  back up.
+- Vimm's Lair throttles repeated downloads; if you click too fast it'll
+  temporarily refuse new requests. EasyVimm goes at your pace, which usually
+  keeps you under the limit.
+- The download detector matches by extension and timing, not by hash. If you
+  download something else into the same folder during a session, hit **Skip**
+  to keep the queue from grabbing the wrong file.

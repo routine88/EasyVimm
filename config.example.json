@@ -1,0 +1,8 @@
+{
+  "_comment": "Copy this file to config.json and edit. Paths support ~ expansion.",
+  "downloads_folder": "~/Downloads",
+  "output_folder": "~/EasyVimm-ROMs",
+  "naming_convention": "miyoo_onion",
+  "match_window_seconds": 600,
+  "auto_open_next": false
+}
