@@ -87,8 +87,13 @@ If you accidentally start a different download during a session, just hit
 Curated top-50 lists per console live in `data/roms_<console>.json`. Each entry
 is `{ "title": "...", "vimm_id": null }`. If you fill in `vimm_id` with the
 numeric ID from a vault URL like `https://vimm.net/vault/12345`, EasyVimm will
-open that page directly. Otherwise it falls back to a Vimm search URL using the
-title and system, and you click the right result.
+open that page directly. Otherwise it falls back to Vimm's A–Z system index
+(e.g. `https://vimm.net/vault/NES`) — you click into the listed title from
+there.
+
+Library sizes: NES, SNES, GB, GBC, GBA, N64, Genesis, and PSX ship with 50
+titles each. Master System, Game Gear, and TG16 ship with 30 — those libraries
+have fewer widely-agreed classics.
 
 To add or reorder games, just edit the JSON files. To add a new console,
 append it to `data/consoles.json` and create a matching `data/roms_<key>.json`.

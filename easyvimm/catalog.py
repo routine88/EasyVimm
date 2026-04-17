@@ -1,9 +1,9 @@
 import json
 from pathlib import Path
-from urllib.parse import quote_plus
+from urllib.parse import quote
 
 VIMM_VAULT_URL = "https://vimm.net/vault/{vimm_id}"
-VIMM_SEARCH_URL = "https://vimm.net/?p=search&system={system}&q={query}"
+VIMM_SYSTEM_INDEX_URL = "https://vimm.net/vault/{system}"
 
 
 def load_consoles(data_dir: Path) -> dict:
@@ -24,10 +24,7 @@ def load_games(data_dir: Path, console_key: str) -> list[dict]:
 def vimm_url_for(game: dict, vimm_system: str) -> str:
     if game.get("vimm_id"):
         return VIMM_VAULT_URL.format(vimm_id=game["vimm_id"])
-    return VIMM_SEARCH_URL.format(
-        system=quote_plus(vimm_system),
-        query=quote_plus(game["title"]),
-    )
+    return VIMM_SYSTEM_INDEX_URL.format(system=quote(vimm_system, safe=""))
 
 
 def build_queue(data_dir: Path, console_keys: list[str]) -> list[dict]:
