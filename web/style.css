@@ -87,6 +87,42 @@ h2 { margin-top: 2rem; font-size: 1.2rem; border-bottom: 1px solid var(--border)
   margin-top: 0.25rem;
 }
 
+.quick-picks {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+.preset-button {
+  background: linear-gradient(135deg, rgba(47, 129, 247, 0.18), rgba(47, 129, 247, 0.08));
+  border: 1px solid var(--accent);
+  color: var(--text);
+  padding: 0.75rem 1rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  cursor: pointer;
+  min-width: 260px;
+}
+.preset-button:hover { background: rgba(47, 129, 247, 0.28); }
+.preset-name { font-weight: 700; font-size: 1rem; }
+.preset-desc { font-size: 0.85rem; color: var(--muted); }
+.preset-desc em { color: var(--accent); font-style: normal; font-weight: 600; }
+
+.selection-summary {
+  margin: 0.75rem 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+button.big {
+  font-size: 1.05rem;
+  padding: 0.75rem 1.4rem;
+}
+button[disabled] { opacity: 0.5; cursor: not-allowed; }
+button[disabled]:hover { border-color: var(--border); background: var(--panel); }
+
 .console-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

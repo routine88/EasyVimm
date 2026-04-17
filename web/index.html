@@ -9,7 +9,7 @@
 <body>
   <header>
     <h1>EasyVimm</h1>
-    <p class="tagline">Click-through ROM downloader for Vimm's Lair vault</p>
+    <p class="tagline">Grab the best classic games and put them on your handheld.</p>
   </header>
 
   <main>
@@ -34,10 +34,10 @@
           <label>Downloads folder
             <input id="cfg-downloads" type="text" />
           </label>
-          <label>Output folder
+          <label>Where to save your ROMs
             <input id="cfg-output" type="text" />
           </label>
-          <label>Naming convention
+          <label>Handheld / emulator
             <select id="cfg-naming">
               <option value="miyoo_onion">Miyoo Mini Plus (OnionOS)</option>
               <option value="miyoo_stock">Miyoo Mini (Stock)</option>
@@ -47,19 +47,29 @@
           </label>
           <label class="checkbox">
             <input id="cfg-auto-open" type="checkbox" />
-            Auto-open next ROM tab on start
+            Open the next game's page automatically
           </label>
         </div>
         <button id="save-config-btn">Save settings</button>
       </div>
 
-      <h2>2. Pick consoles</h2>
+      <h2>2. Pick your games</h2>
+      <div class="quick-picks">
+        <button id="preset-classic-six" class="preset-button" type="button">
+          <span class="preset-name">Classic Six</span>
+          <span class="preset-desc">NES, SNES, Genesis, Game Boy, GBC, GBA<br>
+            <em id="preset-classic-six-estimate">—</em></span>
+        </button>
+        <button id="preset-clear" class="link-button" type="button">Clear picks</button>
+      </div>
       <div id="console-grid" class="console-grid">Loading…</div>
-      <button id="start-btn" class="primary">Start session</button>
+
+      <div id="selection-summary" class="selection-summary">Pick at least one console.</div>
+      <button id="start-btn" class="primary big" disabled>Let's get these games</button>
     </section>
 
     <section id="session-panel" hidden>
-      <h2>Session in progress</h2>
+      <h2>Getting your games…</h2>
       <div id="progress-bar"><div id="progress-fill"></div></div>
       <p id="progress-text">—</p>
 
@@ -70,29 +80,29 @@
         </div>
         <h3 id="current-title">—</h3>
         <div class="actions">
-          <button id="open-btn" class="primary">Open Vimm page</button>
-          <button id="skip-btn">Skip</button>
-          <button id="stop-btn" class="danger">Stop session</button>
+          <button id="open-btn" class="primary">Open download page</button>
+          <button id="skip-btn">Skip this one</button>
+          <button id="stop-btn" class="danger">Stop</button>
         </div>
-        <p class="hint">The tab opens on Vimm's A–Z list for this console. Find the
-          listed title, click into its vault page, solve any Cloudflare challenge, then
-          click the Vimm download button. When the file lands in your downloads folder,
-          EasyVimm renames it and moves it into the right console folder.</p>
+        <p class="hint">A new tab opens on Vimm's A–Z list for this console. Find the
+          listed title, click it, then click the big Download button. If a "Prove you're
+          not a robot" box pops up, click it. EasyVimm will see the file and save it for
+          you.</p>
       </div>
 
-      <h3>Recent activity</h3>
+      <h3>What I've saved so far</h3>
       <ul id="history-list" class="history"></ul>
     </section>
 
     <section id="done-panel" hidden>
-      <h2>Session complete</h2>
+      <h2>All done!</h2>
       <p id="done-summary">—</p>
-      <button id="restart-btn">Start a new session</button>
+      <button id="restart-btn">Pick more games</button>
     </section>
   </main>
 
   <footer>
-    <p>Files land in <code id="footer-output">—</code></p>
+    <p>Your games live in <code id="footer-output">—</code></p>
   </footer>
 
   <script src="/web/app.js"></script>

@@ -4,7 +4,12 @@ const state = {
   config: {},
   status: null,
   pollHandle: null,
-  lastFiledCount: 0,
+};
+
+const STATUS_LABELS = {
+  filed: "saved",
+  skipped: "skipped",
+  failed: "couldn't save",
 };
 
 const $ = (id) => document.getElementById(id);
@@ -16,6 +21,25 @@ async function api(path, opts = {}) {
   });
   if (!res.ok) throw new Error(`${path}: ${res.status}`);
   return res.json();
+}
+
+function formatSize(mb) {
+  if (mb >= 1024) return `${(mb / 1024).toFixed(1)} GB`;
+  if (mb >= 10) return `${Math.round(mb)} MB`;
+  if (mb >= 1) return `${mb.toFixed(1)} MB`;
+  return `${Math.round(mb * 1000)} KB`;
+}
+
+function estimateForConsoles(keys) {
+  let games = 0;
+  let mb = 0;
+  for (const key of keys) {
+    const meta = state.consoles[key];
+    if (!meta) continue;
+    games += meta.game_count || 0;
+    mb += (meta.game_count || 0) * (meta.avg_rom_mb || 0);
+  }
+  return { games, mb };
 }
 
 async function loadConfig() {
@@ -64,16 +88,30 @@ async function loadConsoles() {
     const card = document.createElement("div");
     card.className = "console-card";
     card.dataset.key = key;
+    const sizeHint = meta.avg_rom_mb
+      ? ` · ~${formatSize(meta.game_count * meta.avg_rom_mb)}`
+      : "";
     card.innerHTML = `
-      <div class="name">${meta.display_name}</div>
-      <div class="count">${meta.game_count} curated games</div>
+      <div class="name">${meta.short_name || meta.display_name}</div>
+      <div class="count">${meta.game_count} top games${sizeHint}</div>
     `;
-    card.addEventListener("click", () => toggleConsole(key, card));
+    card.addEventListener("click", () => toggleConsole(key));
     grid.appendChild(card);
   }
+
+  const classicKeys = Object.entries(state.consoles)
+    .filter(([, meta]) => meta.classic_six)
+    .map(([key]) => key);
+  const classicEst = estimateForConsoles(classicKeys);
+  $("preset-classic-six-estimate").textContent =
+    `${classicEst.games} games · about ${formatSize(classicEst.mb)}`;
+
+  updateSelectionSummary();
 }
 
-function toggleConsole(key, card) {
+function toggleConsole(key) {
+  const card = document.querySelector(`.console-card[data-key="${key}"]`);
+  if (!card) return;
   if (state.selected.has(key)) {
     state.selected.delete(key);
     card.classList.remove("selected");
@@ -81,27 +119,46 @@ function toggleConsole(key, card) {
     state.selected.add(key);
     card.classList.add("selected");
   }
+  updateSelectionSummary();
+}
+
+function selectOnly(keys) {
+  state.selected = new Set(keys);
+  document.querySelectorAll(".console-card").forEach((card) => {
+    card.classList.toggle("selected", state.selected.has(card.dataset.key));
+  });
+  updateSelectionSummary();
+}
+
+function updateSelectionSummary() {
+  const el = $("selection-summary");
+  const btn = $("start-btn");
+  if (state.selected.size === 0) {
+    el.textContent = "Pick at least one console above, or click Classic Six.";
+    btn.disabled = true;
+    return;
+  }
+  const est = estimateForConsoles(state.selected);
+  const consoles = Array.from(state.selected)
+    .map((k) => state.consoles[k]?.short_name || k)
+    .join(", ");
+  el.textContent = `Picked: ${consoles} — ${est.games} games, about ${formatSize(est.mb)}.`;
+  btn.disabled = false;
 }
 
 async function startSession() {
-  if (state.selected.size === 0) {
-    alert("Pick at least one console.");
-    return;
-  }
+  if (state.selected.size === 0) return;
   const consoles = Array.from(state.selected);
   state.status = await api("/api/session/start", {
     method: "POST",
     body: JSON.stringify({ consoles }),
   });
-  state.lastFiledCount = 0;
   $("setup-panel").hidden = true;
   $("done-panel").hidden = true;
   $("session-panel").hidden = false;
   renderStatus();
   startPolling();
-  if (state.config.auto_open_next && state.status.current) {
-    // Server already opened it; no-op.
-  } else if (state.status.current) {
+  if (!state.config.auto_open_next && state.status.current) {
     openCurrent();
   }
 }
@@ -109,7 +166,6 @@ async function startSession() {
 async function openCurrent() {
   const snap = state.status;
   if (!snap || !snap.current) return;
-  // window.open inside a user gesture works without popup blocker.
   window.open(snap.current.url, "_blank", "noopener");
 }
 
@@ -122,7 +178,7 @@ async function skipCurrent() {
 }
 
 async function stopSession() {
-  if (!confirm("Stop the current session?")) return;
+  if (!confirm("Stop getting games? You can pick up again later.")) return;
   state.status = await api("/api/session/stop", { method: "POST" });
   renderStatus();
   showDone();
@@ -139,13 +195,8 @@ async function pollStatus() {
     const advanced = state.status && next.cursor > state.status.cursor;
     state.status = next;
     renderStatus();
-    if (advanced) {
-      // ROM was filed in the background; if user wants auto-open, fetch next page.
-      if (state.config.auto_open_next && next.current) {
-        // Browsers block window.open outside user gestures, so we rely on
-        // the server-side webbrowser.open instead.
-        await fetch("/api/session/open_current", { method: "POST" });
-      }
+    if (advanced && state.config.auto_open_next && next.current) {
+      await fetch("/api/session/open_current", { method: "POST" });
     }
     if (!next.active) {
       clearInterval(state.pollHandle);
@@ -163,10 +214,12 @@ function renderStatus() {
   const total = snap.total || 1;
   const done = snap.cursor;
   $("progress-fill").style.width = `${(done / total) * 100}%`;
-  $("progress-text").textContent = `${done} of ${total} processed · ${snap.remaining} remaining`;
+  $("progress-text").textContent =
+    `Saved ${done} of ${total} — ${snap.remaining} to go.`;
   if (snap.current) {
-    $("current-console").textContent = snap.current.console_display;
-    $("current-rank").textContent = `#${snap.current.rank} on the curated list`;
+    $("current-console").textContent =
+      state.consoles[snap.current.console]?.short_name || snap.current.console_display;
+    $("current-rank").textContent = `Game ${snap.current.rank} of the top ${total} you picked`;
     $("current-title").textContent = snap.current.title;
   } else {
     $("current-console").textContent = "—";
@@ -178,9 +231,10 @@ function renderStatus() {
   for (const h of snap.history.slice().reverse()) {
     const li = document.createElement("li");
     li.className = h.status;
+    const label = STATUS_LABELS[h.status] || h.status;
     li.innerHTML = `
       <span><strong>${h.title}</strong> <em>(${h.console})</em></span>
-      <span class="status">${h.status}${h.note ? " · " + h.note : ""}</span>
+      <span class="status">${label}${h.note ? " · " + h.note : ""}</span>
     `;
     list.appendChild(li);
   }
@@ -194,13 +248,19 @@ function showDone() {
   const filed = snap.history.filter((h) => h.status === "filed").length;
   const skipped = snap.history.filter((h) => h.status === "skipped").length;
   const failed = snap.history.filter((h) => h.status === "failed").length;
+  const parts = [`${filed} saved`];
+  if (skipped) parts.push(`${skipped} skipped`);
+  if (failed) parts.push(`${failed} couldn't save`);
   $("done-summary").textContent =
-    `Filed ${filed} · Skipped ${skipped} · Failed ${failed}.`;
+    `You got ${parts.join(", ")}. Your games are in ${state.config.output_folder}.`;
 }
 
 function restart() {
   state.selected.clear();
-  document.querySelectorAll(".console-card.selected").forEach((c) => c.classList.remove("selected"));
+  document.querySelectorAll(".console-card.selected").forEach((c) =>
+    c.classList.remove("selected"),
+  );
+  updateSelectionSummary();
   $("done-panel").hidden = true;
   $("setup-panel").hidden = false;
 }
@@ -211,9 +271,18 @@ function flash(msg) {
   setTimeout(() => ($("save-config-btn").textContent = original), 1500);
 }
 
+function applyClassicSix() {
+  const keys = Object.entries(state.consoles)
+    .filter(([, meta]) => meta.classic_six)
+    .map(([key]) => key);
+  selectOnly(keys);
+}
+
 function wire() {
   $("save-config-btn").addEventListener("click", saveConfig);
   $("toggle-advanced").addEventListener("click", toggleAdvanced);
+  $("preset-classic-six").addEventListener("click", applyClassicSix);
+  $("preset-clear").addEventListener("click", () => selectOnly([]));
   $("start-btn").addEventListener("click", startSession);
   $("open-btn").addEventListener("click", openCurrent);
   $("skip-btn").addEventListener("click", skipCurrent);

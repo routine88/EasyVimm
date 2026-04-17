@@ -1,7 +1,10 @@
 {
   "NES": {
     "display_name": "Nintendo Entertainment System",
+    "short_name": "NES",
     "vimm_system": "NES",
+    "classic_six": true,
+    "avg_rom_mb": 0.3,
     "extensions": [".nes", ".zip", ".7z"],
     "folders": {
       "miyoo_onion": "FC",
@@ -12,7 +15,10 @@
   },
   "SNES": {
     "display_name": "Super Nintendo",
+    "short_name": "SNES",
     "vimm_system": "SNES",
+    "classic_six": true,
+    "avg_rom_mb": 2,
     "extensions": [".smc", ".sfc", ".zip", ".7z"],
     "folders": {
       "miyoo_onion": "SFC",
@@ -23,7 +29,10 @@
   },
   "GB": {
     "display_name": "Game Boy",
+    "short_name": "Game Boy",
     "vimm_system": "GB",
+    "classic_six": true,
+    "avg_rom_mb": 0.2,
     "extensions": [".gb", ".zip", ".7z"],
     "folders": {
       "miyoo_onion": "GB",
@@ -34,7 +43,10 @@
   },
   "GBC": {
     "display_name": "Game Boy Color",
+    "short_name": "Game Boy Color",
     "vimm_system": "GBC",
+    "classic_six": true,
+    "avg_rom_mb": 1,
     "extensions": [".gbc", ".zip", ".7z"],
     "folders": {
       "miyoo_onion": "GBC",
@@ -45,7 +57,10 @@
   },
   "GBA": {
     "display_name": "Game Boy Advance",
+    "short_name": "Game Boy Advance",
     "vimm_system": "GBA",
+    "classic_six": true,
+    "avg_rom_mb": 10,
     "extensions": [".gba", ".zip", ".7z"],
     "folders": {
       "miyoo_onion": "GBA",
@@ -56,7 +71,10 @@
   },
   "N64": {
     "display_name": "Nintendo 64",
+    "short_name": "N64",
     "vimm_system": "N64",
+    "classic_six": false,
+    "avg_rom_mb": 25,
     "extensions": [".n64", ".z64", ".v64", ".zip", ".7z"],
     "folders": {
       "miyoo_onion": "N64",
@@ -67,7 +85,10 @@
   },
   "Genesis": {
     "display_name": "Sega Genesis / Mega Drive",
+    "short_name": "Genesis",
     "vimm_system": "Genesis",
+    "classic_six": true,
+    "avg_rom_mb": 2,
     "extensions": [".md", ".gen", ".bin", ".smd", ".zip", ".7z"],
     "folders": {
       "miyoo_onion": "MD",
@@ -78,7 +99,10 @@
   },
   "MasterSystem": {
     "display_name": "Sega Master System",
+    "short_name": "Master System",
     "vimm_system": "SMS",
+    "classic_six": false,
+    "avg_rom_mb": 0.3,
     "extensions": [".sms", ".zip", ".7z"],
     "folders": {
       "miyoo_onion": "MS",
@@ -89,7 +113,10 @@
   },
   "GameGear": {
     "display_name": "Sega Game Gear",
+    "short_name": "Game Gear",
     "vimm_system": "GG",
+    "classic_six": false,
+    "avg_rom_mb": 0.3,
     "extensions": [".gg", ".zip", ".7z"],
     "folders": {
       "miyoo_onion": "GG",
@@ -100,7 +127,10 @@
   },
   "PSX": {
     "display_name": "PlayStation",
+    "short_name": "PlayStation",
     "vimm_system": "PS1",
+    "classic_six": false,
+    "avg_rom_mb": 400,
     "extensions": [".bin", ".cue", ".iso", ".chd", ".pbp", ".zip", ".7z"],
     "folders": {
       "miyoo_onion": "PS",
@@ -111,7 +141,10 @@
   },
   "TG16": {
     "display_name": "TurboGrafx-16 / PC Engine",
+    "short_name": "TurboGrafx-16",
     "vimm_system": "TG16",
+    "classic_six": false,
+    "avg_rom_mb": 0.5,
     "extensions": [".pce", ".zip", ".7z"],
     "folders": {
       "miyoo_onion": "PCE",
