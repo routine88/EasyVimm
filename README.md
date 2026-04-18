@@ -24,14 +24,32 @@ The flow:
 
 1. Install [Python 3.10 or newer](https://www.python.org/downloads/).
    On Windows, **check the box "Add python.exe to PATH"** during install.
+   On Windows, install Python **from python.org**, not the Microsoft Store
+   — the Store placeholder can't create virtual environments.
 2. Download this project ([Code → Download ZIP](https://github.com/routine88/easyvimm)
    or `git clone`) and unzip it somewhere you can find again (e.g. your Desktop).
 3. Double-click the launcher for your OS:
    - **Windows:** `EasyVimm.bat`
    - **macOS / Linux:** `EasyVimm.command`
+   - **Any OS:** `EasyVimm.py` — run as `python3 EasyVimm.py` (works even when
+     `.command` has no execute bit, which happens on macOS ZIP downloads).
 
 The launcher sets up everything on first run, checks GitHub for updates on
 every launch, starts the app, and opens your browser automatically.
+
+### Nothing happens when I double-click `EasyVimm.command` (macOS)
+
+macOS strips the execute bit when you unzip a download from a browser, so
+Finder silently refuses to run the file. You have three options:
+
+1. **Easiest:** run `python3 EasyVimm.py` from a Terminal window instead:
+   open Terminal (Cmd+Space, type "Terminal", Enter), then drag the EasyVimm
+   folder into the Terminal and press Enter — that `cd`s into the folder — and
+   finally type `python3 EasyVimm.py` and press Enter.
+2. **Permanent fix:** in Terminal, run `chmod +x EasyVimm.command` once.
+   After that, double-click will work.
+3. **Gatekeeper fallback:** right-click `EasyVimm.command` in Finder and pick
+   "Open". macOS will ask permission once, then remember it.
 
 ## Manual install (advanced)
 

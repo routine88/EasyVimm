@@ -16,23 +16,39 @@ if errorlevel 1 (
     set PYTHON_EXE=py
     where !PYTHON_EXE! >nul 2>nul
     if errorlevel 1 (
-        echo [X] Python is not installed on this computer.
-        echo.
-        echo To use EasyVimm you need Python 3.10 or newer.
-        echo I'll open the download page in your browser now.
-        echo.
-        echo IMPORTANT: When you install Python, check the box that says
-        echo             "Add python.exe to PATH"
-        echo            before you click Install.
-        echo.
-        start https://www.python.org/downloads/
-        echo After Python is installed, close this window and double-click
-        echo EasyVimm.bat again.
-        echo.
-        pause
-        exit /b 1
+        goto :python_missing
     )
 )
+
+REM --- Detect the Windows Store placeholder.
+REM     On Win10/11 with no real Python, 'python' opens the Microsoft Store
+REM     instead of running. `python --version` prints nothing in that case.
+for /f "tokens=*" %%v in ('%PYTHON_EXE% --version 2^>nul') do set PY_VERSION=%%v
+if not defined PY_VERSION goto :python_missing
+echo %PY_VERSION% | findstr /R /C:"^Python [3-9]" >nul
+if errorlevel 1 goto :python_missing
+goto :python_ok
+
+:python_missing
+echo [X] Python 3.10 or newer is not installed on this computer.
+echo.
+echo To use EasyVimm you need real Python from python.org
+echo ^(not the Microsoft Store placeholder^).
+echo.
+echo I'll open the download page in your browser now.
+echo.
+echo IMPORTANT: When you install Python, check the box that says
+echo             "Add python.exe to PATH"
+echo            before you click Install.
+echo.
+start https://www.python.org/downloads/
+echo After Python is installed, close this window and double-click
+echo EasyVimm.bat again.
+echo.
+pause
+exit /b 1
+
+:python_ok
 
 REM --- First-run: create virtual environment ---
 if not exist ".venv\Scripts\python.exe" (
