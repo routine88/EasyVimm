@@ -7,8 +7,11 @@ from typing import Optional
 from .catalog import build_queue, load_consoles
 from .filer import (
     ext_matches,
+    extract_rom_from_zip,
     file_rom,
+    is_archive,
     is_partial,
+    playable_extensions,
     sanitize_filename,
     target_folder,
     wait_until_stable,
@@ -262,8 +265,18 @@ class DownloadSession:
             self.config["naming_convention"],
         )
         new_name = sanitize_filename(current["title"])
+        note: Optional[str] = None
         try:
-            saved = file_rom(match, dest, new_name)
+            if is_archive(match):
+                rom_exts = playable_extensions(console_meta["extensions"])
+                extracted = extract_rom_from_zip(match, dest, new_name, rom_exts)
+                if extracted:
+                    saved = extracted
+                else:
+                    saved = file_rom(match, dest, new_name)
+                    note = "kept as archive — emulator will unzip"
+            else:
+                saved = file_rom(match, dest, new_name)
         except OSError as exc:
             entry = HistoryEntry(
                 title=current["title"],
@@ -277,6 +290,7 @@ class DownloadSession:
                 console=current["console"],
                 status="filed",
                 saved_path=str(saved),
+                note=note,
             )
         with self.lock:
             self.history.append(entry)

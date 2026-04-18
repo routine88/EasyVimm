@@ -40,16 +40,6 @@ if [ -z "$PYTHON_EXE" ]; then
   exit 1
 fi
 
-# --- Self-update from GitHub if this is a git checkout ---
-if [ -d ".git" ] && command -v git >/dev/null 2>&1; then
-  echo "[*] Checking for updates..."
-  if git pull --ff-only >/dev/null 2>&1; then
-    echo "    up to date."
-  else
-    echo "    (skipped - could not update, continuing with current version)"
-  fi
-fi
-
 # --- First-run: create virtual environment ---
 if [ ! -x ".venv/bin/python" ]; then
   echo "[*] First-time setup: creating virtual environment..."
@@ -67,6 +57,10 @@ if ! ".venv/bin/python" -m pip install --disable-pip-version-check -q -r require
   read -r -p "Press Enter to close... " _
   exit 1
 fi
+
+# --- Self-update: git pull for git clones, GitHub zip overlay otherwise ---
+echo "[*] Checking for updates..."
+".venv/bin/python" -m easyvimm.updater || true
 
 echo ""
 echo "[*] Starting EasyVimm... a browser window will open in a moment."

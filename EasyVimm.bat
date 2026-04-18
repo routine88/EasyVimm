@@ -34,20 +34,6 @@ if errorlevel 1 (
     )
 )
 
-REM --- Self-update from GitHub if this is a git checkout ---
-if exist ".git" (
-    where git >nul 2>nul
-    if not errorlevel 1 (
-        echo [*] Checking for updates...
-        git pull --ff-only 2>nul
-        if errorlevel 1 (
-            echo     ^(skipped - could not update, continuing with current version^)
-        ) else (
-            echo     up to date.
-        )
-    )
-)
-
 REM --- First-run: create virtual environment ---
 if not exist ".venv\Scripts\python.exe" (
     echo [*] First-time setup: creating virtual environment...
@@ -67,6 +53,10 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
+
+REM --- Self-update: git pull for git clones, GitHub zip overlay otherwise ---
+echo [*] Checking for updates...
+".venv\Scripts\python.exe" -m easyvimm.updater
 
 echo.
 echo [*] Starting EasyVimm... a browser window will open in a moment.
