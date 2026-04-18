@@ -326,6 +326,18 @@ button.danger { background: var(--danger); border-color: var(--danger); color: w
 }
 #sd-progress-text, #sd-done-text { color: var(--muted); margin: 0.4rem 0 0; }
 
+.finish-steps {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.9rem 1.1rem;
+  margin: 1rem 0;
+}
+.finish-steps h3 { margin: 0 0 0.5rem; font-size: 1rem; }
+.finish-steps ol { margin: 0; padding-left: 1.2rem; line-height: 1.6; }
+.finish-steps li { margin: 0.25rem 0; }
+.finish-steps strong { color: var(--accent); }
+
 .history { list-style: none; padding: 0; margin: 0.5rem 0 0; }
 .history li {
   background: var(--panel);

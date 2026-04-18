@@ -546,7 +546,8 @@ async function pollSdProgress() {
     $("sd-copy-btn").hidden = true;
     $("sd-done-area").hidden = false;
     $("sd-done-text").textContent =
-      `✓ ${snap.message || `Copied ${snap.copied} games.`} You can safely eject your SD card.`;
+      `✓ ${snap.message || `Copied ${snap.copied} games.`}`;
+    renderFinishSteps();
   } else if (snap.state === "error") {
     clearInterval(state.sdPollHandle);
     state.sdPollHandle = null;
@@ -555,6 +556,83 @@ async function pollSdProgress() {
     $("sd-copy-btn").disabled = false;
     $("sd-copy-btn").textContent = "Try again";
   }
+}
+
+function detectClientOS() {
+  const p = (navigator.userAgentData?.platform || navigator.platform || "").toLowerCase();
+  if (p.includes("mac")) return "mac";
+  if (p.includes("win")) return "win";
+  if (p.includes("linux") || p.includes("chrome os") || p.includes("cros")) return "linux";
+  return "other";
+}
+
+function ejectInstructions(os) {
+  switch (os) {
+    case "win":
+      return (
+        "On your computer, open <strong>File Explorer</strong>, right-click the " +
+        "SD card in the left column, and choose <strong>Eject</strong>. Wait for " +
+        "the safe-to-remove message before pulling the card out."
+      );
+    case "mac":
+      return (
+        "In <strong>Finder</strong>, click the eject arrow next to the SD card name " +
+        "in the left column, or drag the card icon from your desktop to the Trash " +
+        "(it turns into an Eject icon). Wait for it to disappear before unplugging."
+      );
+    case "linux":
+      return (
+        "In your file manager, click the eject arrow next to the SD card, or run " +
+        "<code>sync &amp;&amp; udisksctl unmount -b /dev/&lt;your-card&gt;</code>. " +
+        "Wait for the 'safe to remove' message before pulling the card out."
+      );
+    default:
+      return (
+        "Safely eject the SD card from your computer before you unplug it " +
+        "(look for an 'Eject' option next to the card)."
+      );
+  }
+}
+
+function refreshInstructions(naming) {
+  switch (naming) {
+    case "miyoo_onion":
+      return (
+        "Put the SD card back in your Miyoo Mini Plus and turn it on. " +
+        "If your new games don't show up, open <strong>Options → Refresh Roms</strong> " +
+        "from the main menu. OnionOS will scan and add them."
+      );
+    case "miyoo_stock":
+      return (
+        "Put the SD card back in your Miyoo Mini and turn it on. The stock system " +
+        "picks up new games automatically — scroll through each console list to see them."
+      );
+    case "retroarch":
+      return (
+        "In RetroArch, go to <strong>Import Content → Scan Directory</strong>, " +
+        "point it at your card's roms folder, and wait for it to finish. Your new " +
+        "games will appear in the console playlists."
+      );
+    case "es_de":
+      return (
+        "Start EmulationStation-DE. If your new games don't show up, go to " +
+        "<strong>Main Menu → Other Settings → Rescan ROM Directory</strong>."
+      );
+    default:
+      return "Put the SD card back in your handheld and turn it on.";
+  }
+}
+
+function renderFinishSteps() {
+  const ol = $("finish-list");
+  if (!ol) return;
+  const os = detectClientOS();
+  const naming = state.config.naming_convention || "miyoo_onion";
+  const steps = [
+    `<strong>Eject safely.</strong> ${ejectInstructions(os)}`,
+    `<strong>Plug into your handheld.</strong> ${refreshInstructions(naming)}`,
+  ];
+  ol.innerHTML = steps.map((s) => `<li>${s}</li>`).join("");
 }
 
 async function resumeExistingSession() {
