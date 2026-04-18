@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>EasyVimm</title>
   <link rel="stylesheet" href="/web/style.css" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20x='6'%20y='14'%20width='52'%20height='36'%20rx='8'%20fill='%232f81f7'/%3E%3Ccircle%20cx='18'%20cy='32'%20r='4'%20fill='%23fff'/%3E%3Crect%20x='42'%20y='28'%20width='8'%20height='8'%20rx='2'%20fill='%23fff'/%3E%3Crect%20x='26'%20y='22'%20width='2'%20height='16'%20fill='%23fff'/%3E%3Crect%20x='20'%20y='28'%20width='14'%20height='2'%20fill='%23fff'/%3E%3Crect%20x='20'%20y='32'%20width='14'%20height='2'%20fill='%23fff'/%3E%3C/svg%3E" />
 </head>
 <body>
   <header>
@@ -82,6 +83,71 @@
       </p>
 
       <p class="setup-footer-link">
+        Stuck on something?
+        <button id="toggle-help" class="link-button" type="button">Open the help guide →</button>
+      </p>
+
+      <div id="help-panel" class="help-panel" hidden>
+        <h3>Help &amp; troubleshooting</h3>
+        <details>
+          <summary>Nothing happens when I double-click the launcher (macOS)</summary>
+          <p>macOS removes the run permission from scripts inside ZIP files.
+            Right-click <strong>EasyVimm.command</strong> and choose <strong>Open</strong>.
+            You'll only need to do that once. There's also a <code>READ ME FIRST
+            (macOS).txt</code> file in the folder with two other fixes.</p>
+        </details>
+        <details>
+          <summary>"Python is not installed" (Windows)</summary>
+          <p>Install Python 3.10 or newer from
+            <a href="https://www.python.org/downloads/" target="_blank" rel="noopener">python.org</a>,
+            <strong>not the Microsoft Store</strong>. During install, tick the
+            box that says "Add python.exe to PATH". Close the launcher and
+            double-click it again.</p>
+        </details>
+        <details>
+          <summary>I clicked Download on Vimm, but EasyVimm just keeps waiting</summary>
+          <ul>
+            <li>Check your browser is saving downloads to this folder:
+              <code id="help-downloads-path">—</code>.</li>
+            <li>Vimm limits free downloads to about one every 10 seconds. If
+              the page says "too many downloads", wait a minute.</li>
+            <li>Some games have a "Choose region" page — pick the USA version
+              first.</li>
+          </ul>
+        </details>
+        <details>
+          <summary>I put the SD card in my Miyoo but don't see my games</summary>
+          <ul>
+            <li><strong>OnionOS:</strong> Open <strong>Options → Refresh Roms</strong>
+              from the main menu.</li>
+            <li><strong>Stock Miyoo:</strong> Power off the device fully, then
+              power it back on.</li>
+            <li>Double-check the card is fully inserted and formatted FAT32
+              or exFAT.</li>
+          </ul>
+        </details>
+        <details>
+          <summary>The launcher says "could not update"</summary>
+          <p>That's fine — EasyVimm keeps running on your current version.
+            The update tries again next time you launch.</p>
+        </details>
+        <details>
+          <summary>A download showed up named "Game (2).nes"</summary>
+          <p>That means you already had a file with that name in the same
+            folder. The new one has a "(2)" added so nothing is overwritten.
+            You can keep whichever copy you want and delete the other.</p>
+        </details>
+        <details>
+          <summary>I want to start completely over</summary>
+          <p>On the setup page, if there's a "You were getting games last
+            time" banner, click <strong>Start over</strong>. To also remove the
+            ROMs from your computer, delete everything inside the folder
+            shown next to "ROMs will be saved to" up top.</p>
+        </details>
+        <button id="help-close-btn">Close help</button>
+      </div>
+
+      <p class="setup-footer-link">
         Power users:
         <button id="toggle-harvest" class="link-button" type="button">
           Teach EasyVimm the exact Vimm pages →
@@ -145,6 +211,10 @@
         <div id="stuck-nudge" class="stuck-nudge" hidden>
           <p>This one is taking a while. Here's what usually fixes it:</p>
           <ul>
+            <li><strong>Make sure your browser is saving downloads to
+              <code id="stuck-watched-path">this folder</code>.</strong>
+              If it's saving somewhere else (like your Desktop), games will
+              never arrive. <button id="stuck-open-settings" class="link-button" type="button">Fix this in Settings →</button></li>
             <li><strong>Vimm limits free downloads to about one every 10 seconds.</strong>
               If the Vimm page says "too many downloads" or "try again later",
               just wait a minute or two — it clears itself.</li>
@@ -219,6 +289,9 @@
 
   <footer>
     <p>Your games live in <code id="footer-output">—</code></p>
+    <p class="legal">EasyVimm is for personal use. You are responsible for
+      making sure anything you download is legal where you live — downloading
+      ROMs for games you don't own may infringe copyright.</p>
   </footer>
 
   <script src="/web/app.js"></script>

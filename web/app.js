@@ -282,13 +282,23 @@ function onSessionComplete() {
 }
 
 let _titleTimer = null;
+function baseTitle() {
+  const snap = state.status;
+  if (snap && snap.total && snap.active) {
+    return `EasyVimm · ${snap.cursor}/${snap.total}`;
+  }
+  return "EasyVimm";
+}
+function syncTitle() {
+  if (_titleTimer) return;  // a flash is in progress; leave it alone
+  document.title = baseTitle();
+}
 function flashTitle(msg) {
   if (_titleTimer) clearTimeout(_titleTimer);
-  const original = "EasyVimm";
-  document.title = `${msg}`;
+  document.title = msg;
   _titleTimer = setTimeout(() => {
-    document.title = original;
     _titleTimer = null;
+    document.title = baseTitle();
   }, 6000);
 }
 
@@ -334,8 +344,23 @@ function evaluateStuckState(snap) {
   const elapsed = Date.now() - state.waitingSince;
   if (elapsed > STUCK_AFTER_MS && !state.stuckPromptShown) {
     state.stuckPromptShown = true;
+    const path = $("stuck-watched-path");
+    if (path && state.config.downloads_folder) {
+      path.textContent = state.config.downloads_folder;
+    }
     $("stuck-nudge").hidden = false;
   }
+}
+
+function openSettingsFromStuckNudge() {
+  // Jump back to the setup page and reveal the advanced panel so the kid
+  // can change the downloads folder without losing their session.
+  showPanel("setup-panel");
+  if ($("advanced-panel").hidden) {
+    toggleAdvanced();
+  }
+  $("cfg-downloads").focus();
+  $("cfg-downloads").select();
 }
 
 function renderStatus() {
@@ -361,6 +386,7 @@ function renderStatus() {
 
   renderDownloadState(snap);
   evaluateStuckState(snap);
+  syncTitle();
 
   const list = $("history-list");
   list.innerHTML = "";
@@ -734,6 +760,9 @@ function wire() {
   $("toggle-harvest").addEventListener("click", toggleHarvestPanel);
   $("harvest-save-btn").addEventListener("click", saveHarvestedIds);
   $("harvest-close-btn").addEventListener("click", toggleHarvestPanel);
+  $("stuck-open-settings").addEventListener("click", openSettingsFromStuckNudge);
+  $("toggle-help").addEventListener("click", toggleHelpPanel);
+  $("help-close-btn").addEventListener("click", toggleHelpPanel);
 }
 
 const HARVEST_SNIPPET =
@@ -779,6 +808,17 @@ function toggleHarvestPanel() {
   btn.textContent = panel.hidden
     ? "Teach EasyVimm the exact Vimm pages →"
     : "Hide this";
+}
+
+function toggleHelpPanel() {
+  const panel = $("help-panel");
+  const btn = $("toggle-help");
+  panel.hidden = !panel.hidden;
+  btn.textContent = panel.hidden ? "Open the help guide →" : "Close the help guide";
+  if (!panel.hidden) {
+    const p = $("help-downloads-path");
+    if (p) p.textContent = state.config.downloads_folder || "your Downloads folder";
+  }
 }
 
 async function saveHarvestedIds() {
