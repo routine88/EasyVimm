@@ -50,10 +50,25 @@ class DownloadSession:
         self.current_progress: dict = dict(IDLE_PROGRESS)
 
     def start(self, console_keys: list[str]) -> dict:
+        queue, already_had = build_queue(
+            self.data_dir,
+            console_keys,
+            output_root=Path(self.config["output_folder"]),
+            naming=self.config["naming_convention"],
+            skip_existing=True,
+        )
         with self.lock:
-            self.queue = build_queue(self.data_dir, console_keys)
+            self.queue = queue
             self.cursor = 0
-            self.history = []
+            self.history = [
+                HistoryEntry(
+                    title=g["title"],
+                    console=g["console"],
+                    status="skipped",
+                    note="already on your computer",
+                )
+                for g in already_had
+            ]
             self.session_start = time.time()
             self.active = bool(self.queue)
             self.current_progress = dict(WAITING_PROGRESS if self.active else IDLE_PROGRESS)

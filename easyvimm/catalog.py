@@ -112,16 +112,40 @@ def merge_vault_ids(data_dir: Path, payload: dict) -> dict:
     return result
 
 
-def build_queue(data_dir: Path, console_keys: list[str]) -> list[dict]:
+def build_queue(
+    data_dir: Path,
+    console_keys: list[str],
+    *,
+    output_root: Path | None = None,
+    naming: str = "miyoo_onion",
+    skip_existing: bool = False,
+) -> tuple[list[dict], list[dict]]:
+    """Build the queue and, optionally, a parallel list of games that were
+    skipped because their output file already exists.
+
+    Returns (queue, skipped). When `skip_existing` is False or `output_root`
+    is None, `skipped` is always empty.
+    """
+    # Local import so the catalog module stays free of filer churn at import
+    # time — filer in turn imports nothing out of catalog, so this is safe.
+    from .filer import sanitize_filename, target_folder
+
     consoles = load_consoles(data_dir)
-    queue = []
+    queue: list[dict] = []
+    skipped: list[dict] = []
     for key in console_keys:
         if key not in consoles:
             continue
         meta = consoles[key]
         games = load_games(data_dir, key)
+        dest_dir = (
+            target_folder(output_root, meta, naming)
+            if output_root is not None and skip_existing
+            else None
+        )
+        rom_exts = [e for e in meta["extensions"] if e.lower() not in {".zip", ".7z"}]
         for idx, game in enumerate(games):
-            queue.append({
+            entry = {
                 "console": key,
                 "console_display": meta["display_name"],
                 "vimm_system": meta["vimm_system"],
@@ -130,5 +154,24 @@ def build_queue(data_dir: Path, console_keys: list[str]) -> list[dict]:
                 "vimm_id": game.get("vimm_id"),
                 "url": vimm_url_for(game, meta["vimm_system"]),
                 "rank": idx + 1,
-            })
-    return queue
+            }
+            if dest_dir is not None and _rom_on_disk(dest_dir, game["title"], rom_exts):
+                skipped.append(entry)
+                continue
+            queue.append(entry)
+    return queue, skipped
+
+
+def _rom_on_disk(dest_dir: Path, title: str, rom_exts: list[str]) -> bool:
+    """Has this game already been filed under dest_dir in a previous session?"""
+    if not dest_dir.exists():
+        return False
+    from .filer import sanitize_filename  # local, see build_queue note
+    base = sanitize_filename(title)
+    # Match both "<Title>.ext" and "<Title> (2).ext" and the multi-file <Title>/ folder.
+    if (dest_dir / base).is_dir():
+        return True
+    for ext in rom_exts:
+        if (dest_dir / f"{base}{ext}").exists():
+            return True
+    return False
