@@ -1,3 +1,4 @@
+import socket
 import threading
 import time
 import webbrowser
@@ -167,17 +168,49 @@ def _open_browser_soon(url: str, delay: float = 1.0) -> None:
     threading.Timer(delay, _open).start()
 
 
+def _find_free_port(start: int = 5000, count: int = 11) -> int | None:
+    """Return the first port in [start, start+count) that we can bind on 127.0.0.1.
+
+    macOS Monterey+ grabs 5000 for AirPlay Receiver by default, so we walk
+    forward until we find one that's actually free.
+    """
+    for port in range(start, start + count):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                s.bind(("127.0.0.1", port))
+                return port
+            except OSError:
+                continue
+    return None
+
+
 def main():
+    port = _find_free_port()
+    if port is None:
+        print("")
+        print("[X] Could not find a free port between 5000 and 5010.")
+        print("    Close any other EasyVimm windows and try again.")
+        print("    (macOS: System Settings -> General -> AirDrop & Handoff, turn off")
+        print("     'AirPlay Receiver' if you want EasyVimm to use port 5000.)")
+        return
+
     threading.Thread(target=watcher_loop, daemon=True).start()
-    url = "http://127.0.0.1:5000"
+    url = f"http://127.0.0.1:{port}"
+
     print("")
-    print(f"  EasyVimm is running.")
-    print(f"  If your browser does not open on its own, go to: {url}")
-    print(f"  Downloads folder: {config['downloads_folder']}")
+    print(f"  EasyVimm is running at  {url}")
+    print(f"  (If a browser tab does not open automatically, visit the URL above.)")
+    print("")
+    print(f"  Downloads come from :  {config['downloads_folder']}")
     print(f"  ROMs will be saved to: {config['output_folder']}")
     print("")
+    if port != 5000:
+        print(f"  [i] Port 5000 was in use, so EasyVimm moved to port {port}.")
+        print("")
+
     _open_browser_soon(url)
-    app.run(host="127.0.0.1", port=5000, debug=False, use_reloader=False)
+    app.run(host="127.0.0.1", port=port, debug=False, use_reloader=False)
 
 
 if __name__ == "__main__":
