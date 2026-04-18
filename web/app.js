@@ -106,17 +106,25 @@ async function loadConsoles() {
   state.consoles = await api("/api/consoles");
   const grid = $("console-grid");
   grid.innerHTML = "";
-  const entries = Object.entries(state.consoles).sort((a, b) =>
-    a[1].display_name.localeCompare(b[1].display_name),
-  );
+  const entries = Object.entries(state.consoles).sort((a, b) => {
+    // Classic Six first (in consoles.json insertion order), then rest alphabetical.
+    const aClassic = a[1].classic_six ? 0 : 1;
+    const bClassic = b[1].classic_six ? 0 : 1;
+    if (aClassic !== bClassic) return aClassic - bClassic;
+    if (a[1].classic_six && b[1].classic_six) return 0;  // stable: preserve JSON order
+    return a[1].display_name.localeCompare(b[1].display_name);
+  });
   for (const [key, meta] of entries) {
     const card = document.createElement("div");
     card.className = "console-card";
+    if (meta.classic_six) card.classList.add("classic");
     card.dataset.key = key;
     const sizeHint = meta.avg_rom_mb
       ? ` · ~${formatSize(meta.game_count * meta.avg_rom_mb)}`
       : "";
+    const badge = meta.classic_six ? `<span class="card-badge">Classic Six</span>` : "";
     card.innerHTML = `
+      ${badge}
       <div class="name">${meta.short_name || meta.display_name}</div>
       <div class="count">${meta.game_count} top games${sizeHint}</div>
     `;

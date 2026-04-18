@@ -137,11 +137,27 @@ button[disabled]:hover { border-color: var(--border); background: var(--panel); 
   cursor: pointer;
   user-select: none;
   transition: border-color 0.15s;
+  position: relative;
 }
 .console-card:hover { border-color: var(--accent); }
 .console-card.selected { border-color: var(--accent); background: rgba(47, 129, 247, 0.1); }
+.console-card.classic {
+  border-color: rgba(47, 129, 247, 0.45);
+}
 .console-card .name { font-weight: 600; }
 .console-card .count { font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem; }
+.console-card .card-badge {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  background: var(--accent);
+  color: white;
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
 
 button {
   background: var(--panel);
