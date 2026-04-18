@@ -13,11 +13,13 @@ from easyvimm.session import DownloadSession
 ROOT = Path(__file__).parent
 DATA_DIR = ROOT / "data"
 CONFIG_PATH = ROOT / "config.json"
+STATE_PATH = ROOT / "session.json"
 STATIC_DIR = ROOT / "web"
 
 app = Flask(__name__, static_folder=None)
 config = load_config(CONFIG_PATH)
-session = DownloadSession(DATA_DIR, config)
+session = DownloadSession(DATA_DIR, config, state_path=STATE_PATH)
+session.load_persisted()
 deploy_job = DeployJob()
 
 
@@ -80,6 +82,21 @@ def api_start():
 @app.get("/api/session/status")
 def api_status():
     return jsonify(session.snapshot())
+
+
+@app.get("/api/session/pending")
+def api_session_pending():
+    return jsonify(session.pending())
+
+
+@app.post("/api/session/resume")
+def api_session_resume():
+    return jsonify(session.resume())
+
+
+@app.post("/api/session/discard")
+def api_session_discard():
+    return jsonify(session.discard())
 
 
 @app.post("/api/session/skip")

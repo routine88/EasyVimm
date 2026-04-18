@@ -13,6 +13,7 @@ from .filer import (
     target_folder,
     wait_until_stable,
 )
+from .persistence import clear_state, load_state, save_state
 
 
 @dataclass
@@ -32,9 +33,10 @@ WAITING_PROGRESS = {"state": "waiting", "filename": None, "size_mb": None}
 class DownloadSession:
     """Tracks a queue of ROM downloads and watches the downloads folder."""
 
-    def __init__(self, data_dir: Path, config: dict):
+    def __init__(self, data_dir: Path, config: dict, state_path: Optional[Path] = None):
         self.data_dir = data_dir
         self.config = config
+        self.state_path = state_path
         self.consoles = load_consoles(data_dir)
         self.lock = threading.Lock()
         self.queue: list[dict] = []
@@ -52,7 +54,90 @@ class DownloadSession:
             self.session_start = time.time()
             self.active = bool(self.queue)
             self.current_progress = dict(WAITING_PROGRESS if self.active else IDLE_PROGRESS)
-            return self.snapshot_locked()
+            snap = self.snapshot_locked()
+        self._persist()
+        return snap
+
+    def load_persisted(self) -> bool:
+        """Load a previously persisted session (paused). Returns True if one was loaded."""
+        if not self.state_path:
+            return False
+        data = load_state(self.state_path)
+        if not data:
+            return False
+        queue = data.get("queue") or []
+        cursor = int(data.get("cursor") or 0)
+        if not queue or cursor >= len(queue):
+            clear_state(self.state_path)
+            return False
+        with self.lock:
+            self.queue = queue
+            self.cursor = cursor
+            self.history = [HistoryEntry(**h) for h in data.get("history", [])]
+            self.session_start = float(data.get("session_start") or time.time())
+            self.active = False  # require explicit resume
+            self.current_progress = dict(WAITING_PROGRESS)
+        return True
+
+    def pending(self) -> dict:
+        """Describe a resumable session without side effects."""
+        with self.lock:
+            if not self.queue or self.cursor >= len(self.queue):
+                return {"pending": False}
+            consoles: list[str] = []
+            seen: set[str] = set()
+            for item in self.queue:
+                if item["console"] not in seen:
+                    seen.add(item["console"])
+                    consoles.append(item["console"])
+            return {
+                "pending": True,
+                "active": self.active,
+                "cursor": self.cursor,
+                "total": len(self.queue),
+                "done": self.cursor,
+                "remaining": len(self.queue) - self.cursor,
+                "consoles": consoles,
+            }
+
+    def resume(self) -> dict:
+        with self.lock:
+            if self.queue and self.cursor < len(self.queue):
+                self.active = True
+                # Reset match window so we don't pick up stale files left in
+                # Downloads from before the pause.
+                self.session_start = time.time()
+                self.current_progress = dict(WAITING_PROGRESS)
+            snap = self.snapshot_locked()
+        self._persist()
+        return snap
+
+    def discard(self) -> dict:
+        with self.lock:
+            self.queue = []
+            self.cursor = 0
+            self.history = []
+            self.active = False
+            self.current_progress = dict(IDLE_PROGRESS)
+            snap = self.snapshot_locked()
+        if self.state_path:
+            clear_state(self.state_path)
+        return snap
+
+    def _persist(self) -> None:
+        if not self.state_path:
+            return
+        with self.lock:
+            if not self.queue or self.cursor >= len(self.queue):
+                clear_state(self.state_path)
+                return
+            payload = {
+                "queue": self.queue,
+                "cursor": self.cursor,
+                "history": [h.__dict__ for h in self.history],
+                "session_start": self.session_start,
+            }
+        save_state(self.state_path, payload)
 
     def snapshot(self) -> dict:
         with self.lock:
@@ -90,13 +175,17 @@ class DownloadSession:
                 self.current_progress = dict(
                     WAITING_PROGRESS if self.active else IDLE_PROGRESS,
                 )
-            return self.snapshot_locked()
+            snap = self.snapshot_locked()
+        self._persist()
+        return snap
 
     def stop(self) -> dict:
         with self.lock:
             self.active = False
             self.current_progress = dict(IDLE_PROGRESS)
-            return self.snapshot_locked()
+            snap = self.snapshot_locked()
+        self._persist()
+        return snap
 
     def _scan_downloads(self, current: dict) -> tuple[Optional[Path], Optional[Path]]:
         """Return (latest_complete_match, latest_partial) in downloads folder."""
@@ -197,6 +286,7 @@ class DownloadSession:
             self.current_progress = dict(
                 WAITING_PROGRESS if self.active else IDLE_PROGRESS,
             )
+        self._persist()
         return entry
 
     # Backwards-compatible alias used by the watcher loop.

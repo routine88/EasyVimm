@@ -454,6 +454,56 @@ async function pollSdProgress() {
   }
 }
 
+async function resumeExistingSession() {
+  const snap = await api("/api/session/resume", { method: "POST" });
+  state.status = snap;
+  $("resume-banner").hidden = true;
+  showPanel("session-panel");
+  renderStatus();
+  startPolling();
+  if (!state.config.auto_open_next && snap.current) {
+    openCurrent();
+  }
+}
+
+async function discardExistingSession() {
+  if (!confirm("Throw away your saved progress and start fresh?")) return;
+  await api("/api/session/discard", { method: "POST" });
+  $("resume-banner").hidden = true;
+}
+
+async function checkForPriorSession() {
+  let status;
+  try {
+    status = await api("/api/session/status");
+  } catch (_err) {
+    return;
+  }
+  if (status.active) {
+    state.status = status;
+    showPanel("session-panel");
+    renderStatus();
+    startPolling();
+    return;
+  }
+  let pending;
+  try {
+    pending = await api("/api/session/pending");
+  } catch (_err) {
+    return;
+  }
+  if (!pending.pending) return;
+  const consoleLabels = (pending.consoles || [])
+    .map((k) => state.consoles[k]?.short_name || k)
+    .join(", ");
+  const msg =
+    `You saved ${pending.done} of ${pending.total} games` +
+    (consoleLabels ? ` (${consoleLabels})` : "") +
+    `. ${pending.remaining} to go.`;
+  $("resume-summary").textContent = msg;
+  $("resume-banner").hidden = false;
+}
+
 function wire() {
   $("save-config-btn").addEventListener("click", saveConfig);
   $("toggle-advanced").addEventListener("click", toggleAdvanced);
@@ -464,6 +514,8 @@ function wire() {
   $("skip-btn").addEventListener("click", skipCurrent);
   $("stop-btn").addEventListener("click", stopSession);
   $("restart-btn").addEventListener("click", restart);
+  $("resume-btn").addEventListener("click", resumeExistingSession);
+  $("discard-btn").addEventListener("click", discardExistingSession);
   $("sd-from-setup-btn").addEventListener("click", openSdPanel);
   $("sd-from-done-btn").addEventListener("click", openSdPanel);
   $("sd-back-btn").addEventListener("click", closeSdPanel);
@@ -476,4 +528,5 @@ function wire() {
   wire();
   await loadConfig();
   await loadConsoles();
+  await checkForPriorSession();
 })();

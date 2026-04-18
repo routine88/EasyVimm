@@ -242,6 +242,16 @@ button.danger { background: var(--danger); border-color: var(--danger); color: w
   font-size: 0.9rem;
 }
 
+.resume-banner {
+  background: linear-gradient(135deg, rgba(210, 153, 34, 0.2), rgba(210, 153, 34, 0.05));
+  border: 1px solid var(--warn);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+.resume-banner h3 { margin: 0 0 0.4rem; font-size: 1.1rem; }
+.resume-banner p { margin: 0 0 0.75rem; color: var(--text); }
+
 .sd-candidates {
   display: flex;
   flex-direction: column;
