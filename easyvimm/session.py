@@ -25,6 +25,10 @@ class HistoryEntry:
     timestamp: float = field(default_factory=time.time)
 
 
+IDLE_PROGRESS = {"state": "idle", "filename": None, "size_mb": None}
+WAITING_PROGRESS = {"state": "waiting", "filename": None, "size_mb": None}
+
+
 class DownloadSession:
     """Tracks a queue of ROM downloads and watches the downloads folder."""
 
@@ -38,6 +42,7 @@ class DownloadSession:
         self.history: list[HistoryEntry] = []
         self.session_start: float = 0.0
         self.active: bool = False
+        self.current_progress: dict = dict(IDLE_PROGRESS)
 
     def start(self, console_keys: list[str]) -> dict:
         with self.lock:
@@ -46,6 +51,7 @@ class DownloadSession:
             self.history = []
             self.session_start = time.time()
             self.active = bool(self.queue)
+            self.current_progress = dict(WAITING_PROGRESS if self.active else IDLE_PROGRESS)
             return self.snapshot_locked()
 
     def snapshot(self) -> dict:
@@ -53,12 +59,12 @@ class DownloadSession:
             return self.snapshot_locked()
 
     def snapshot_locked(self) -> dict:
-        current = self.current_locked()
         return {
             "active": self.active,
             "total": len(self.queue),
             "cursor": self.cursor,
-            "current": current,
+            "current": self.current_locked(),
+            "current_progress": dict(self.current_progress),
             "history": [h.__dict__ for h in self.history[-50:]],
             "remaining": max(0, len(self.queue) - self.cursor),
         }
@@ -81,54 +87,85 @@ class DownloadSession:
                 self.cursor += 1
                 if self.cursor >= len(self.queue):
                     self.active = False
+                self.current_progress = dict(
+                    WAITING_PROGRESS if self.active else IDLE_PROGRESS,
+                )
             return self.snapshot_locked()
 
     def stop(self) -> dict:
         with self.lock:
             self.active = False
+            self.current_progress = dict(IDLE_PROGRESS)
             return self.snapshot_locked()
 
-    def candidate_files(self) -> list[Path]:
-        """Files in the downloads folder that arrived after the session started."""
+    def _scan_downloads(self, current: dict) -> tuple[Optional[Path], Optional[Path]]:
+        """Return (latest_complete_match, latest_partial) in downloads folder."""
         downloads = Path(self.config["downloads_folder"])
         if not downloads.exists():
-            return []
-        results = []
-        for path in downloads.iterdir():
-            if not path.is_file() or is_partial(path):
-                continue
-            try:
-                mtime = path.stat().st_mtime
-            except OSError:
-                continue
-            if mtime + 1 < self.session_start:
-                continue
-            results.append(path)
-        return results
+            return None, None
+        latest_complete: Optional[Path] = None
+        latest_partial: Optional[Path] = None
+        try:
+            for path in downloads.iterdir():
+                if not path.is_file():
+                    continue
+                try:
+                    stat = path.stat()
+                except OSError:
+                    continue
+                if stat.st_mtime + 1 < self.session_start:
+                    continue
+                if is_partial(path):
+                    if latest_partial is None or stat.st_mtime > latest_partial.stat().st_mtime:
+                        latest_partial = path
+                    continue
+                if ext_matches(path, current["extensions"]):
+                    if latest_complete is None or stat.st_mtime > latest_complete.stat().st_mtime:
+                        latest_complete = path
+        except OSError:
+            pass
+        return latest_complete, latest_partial
 
-    def try_match_and_file(self) -> Optional[HistoryEntry]:
-        """Look for a downloaded ROM matching the current queue entry and file it."""
+    def probe_current(self) -> Optional[HistoryEntry]:
+        """One watcher tick: update progress state, file the ROM if one is ready."""
         with self.lock:
             current = self.current_locked()
         if not current:
+            self.current_progress = dict(IDLE_PROGRESS)
             return None
 
-        downloads = Path(self.config["downloads_folder"])
-        if not downloads.exists():
+        complete, partial = self._scan_downloads(current)
+
+        if complete:
+            try:
+                size_mb = complete.stat().st_size / (1024 * 1024)
+            except OSError:
+                size_mb = None
+            self.current_progress = {
+                "state": "finalizing",
+                "filename": complete.name,
+                "size_mb": round(size_mb, 2) if size_mb else None,
+            }
+            if not wait_until_stable(complete, timeout=60):
+                return None
+            return self._file_complete(current, complete)
+
+        if partial:
+            try:
+                size_mb = partial.stat().st_size / (1024 * 1024)
+            except OSError:
+                size_mb = None
+            self.current_progress = {
+                "state": "downloading",
+                "filename": partial.name,
+                "size_mb": round(size_mb, 2) if size_mb else None,
+            }
             return None
 
-        match: Optional[Path] = None
-        for path in self.candidate_files():
-            if ext_matches(path, current["extensions"]):
-                if match is None or path.stat().st_mtime > match.stat().st_mtime:
-                    match = path
+        self.current_progress = dict(WAITING_PROGRESS)
+        return None
 
-        if not match:
-            return None
-
-        if not wait_until_stable(match, timeout=120):
-            return None
-
+    def _file_complete(self, current: dict, match: Path) -> HistoryEntry:
         console_meta = self.consoles[current["console"]]
         dest = target_folder(
             Path(self.config["output_folder"]),
@@ -152,11 +189,16 @@ class DownloadSession:
                 status="filed",
                 saved_path=str(saved),
             )
-
         with self.lock:
             self.history.append(entry)
             self.cursor += 1
             if self.cursor >= len(self.queue):
                 self.active = False
-
+            self.current_progress = dict(
+                WAITING_PROGRESS if self.active else IDLE_PROGRESS,
+            )
         return entry
+
+    # Backwards-compatible alias used by the watcher loop.
+    def try_match_and_file(self) -> Optional[HistoryEntry]:
+        return self.probe_current()

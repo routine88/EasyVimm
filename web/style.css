@@ -194,8 +194,47 @@ button.danger { background: var(--danger); border-color: var(--danger); color: w
   text-transform: uppercase;
 }
 .rank { color: var(--muted); font-size: 0.85rem; }
-.actions { margin: 0.75rem 0; }
-.hint { color: var(--muted); font-size: 0.85rem; margin-bottom: 0; }
+.actions { margin: 0.75rem 0 0.25rem; }
+
+.walkthrough {
+  margin: 0.5rem 0 0.75rem;
+  padding-left: 1.25rem;
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+.walkthrough li { padding-left: 0.25rem; }
+.walkthrough strong { color: var(--accent); }
+
+.download-state {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin: 0.75rem 0;
+  font-size: 0.95rem;
+}
+.download-state .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex-shrink: 0;
+}
+.download-state[data-state="waiting"] .dot { background: var(--muted); }
+.download-state[data-state="downloading"] .dot {
+  background: var(--accent);
+  animation: pulse 1.1s ease-in-out infinite;
+}
+.download-state[data-state="finalizing"] .dot { background: var(--warn); }
+.download-state[data-state="saved"] .dot { background: var(--success); }
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.45; transform: scale(1.35); }
+}
 
 .history { list-style: none; padding: 0; margin: 0.5rem 0 0; }
 .history li {

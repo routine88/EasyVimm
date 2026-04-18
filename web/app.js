@@ -221,11 +221,16 @@ function renderStatus() {
       state.consoles[snap.current.console]?.short_name || snap.current.console_display;
     $("current-rank").textContent = `Game ${snap.current.rank} of the top ${total} you picked`;
     $("current-title").textContent = snap.current.title;
+    $("walkthrough-title").textContent = snap.current.title;
   } else {
     $("current-console").textContent = "—";
     $("current-rank").textContent = "—";
     $("current-title").textContent = "All done!";
+    $("walkthrough-title").textContent = "this game";
   }
+
+  renderDownloadState(snap);
+
   const list = $("history-list");
   list.innerHTML = "";
   for (const h of snap.history.slice().reverse()) {
@@ -238,6 +243,49 @@ function renderStatus() {
     `;
     list.appendChild(li);
   }
+}
+
+function renderDownloadState(snap) {
+  const el = $("download-state");
+  const text = $("state-text");
+  const progress = snap.current_progress || { state: "waiting" };
+  const title = snap.current ? snap.current.title : null;
+
+  let stateKey = progress.state || "waiting";
+  let msg;
+  switch (stateKey) {
+    case "downloading": {
+      const size = formatProgressSize(progress.size_mb);
+      msg = progress.filename
+        ? `Downloading ${progress.filename}${size ? " (" + size + ")" : ""}…`
+        : "Downloading…";
+      break;
+    }
+    case "finalizing": {
+      msg = title
+        ? `Got the file — saving as “${title}” now…`
+        : "Got the file — saving now…";
+      break;
+    }
+    case "idle": {
+      stateKey = "saved";
+      msg = "All games are saved!";
+      break;
+    }
+    default:
+      msg = "Waiting for you to click Download on the Vimm page…";
+      stateKey = "waiting";
+  }
+  el.dataset.state = stateKey;
+  text.textContent = msg;
+}
+
+function formatProgressSize(mb) {
+  if (mb == null) return "";
+  if (mb >= 1024) return `${(mb / 1024).toFixed(1)} GB`;
+  if (mb >= 10) return `${Math.round(mb)} MB`;
+  if (mb >= 1) return `${mb.toFixed(1)} MB`;
+  return `${Math.round(mb * 1000)} KB`;
 }
 
 function showDone() {

@@ -79,15 +79,25 @@
           <div class="rank" id="current-rank">—</div>
         </div>
         <h3 id="current-title">—</h3>
+
+        <ol class="walkthrough">
+          <li>A new tab will open to Vimm's game list.</li>
+          <li>Look for <strong id="walkthrough-title">this game</strong> and click its name.</li>
+          <li>Click the big <strong>Download</strong> button on its page.</li>
+          <li>If a box says "Prove you're not a robot", click it.</li>
+          <li>Wait. I'll see the file and save it for you.</li>
+        </ol>
+
+        <div class="download-state" id="download-state" data-state="waiting">
+          <span class="dot"></span>
+          <span id="state-text">Waiting for you to click Download…</span>
+        </div>
+
         <div class="actions">
           <button id="open-btn" class="primary">Open download page</button>
           <button id="skip-btn">Skip this one</button>
           <button id="stop-btn" class="danger">Stop</button>
         </div>
-        <p class="hint">A new tab opens on Vimm's A–Z list for this console. Find the
-          listed title, click it, then click the big Download button. If a "Prove you're
-          not a robot" box pops up, click it. EasyVimm will see the file and save it for
-          you.</p>
       </div>
 
       <h3>What I've saved so far</h3>
