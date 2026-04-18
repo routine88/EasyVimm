@@ -1,0 +1,37 @@
+============================================
+  EasyVimm - Read this first on macOS
+============================================
+
+If you downloaded EasyVimm as a .zip from GitHub, macOS may have
+stripped the "run" permission from EasyVimm.command. When you
+double-click it, Finder silently refuses to launch it.
+
+You have three ways to fix this. Pick whichever is easiest for you.
+
+
+EASIEST - no Terminal needed:
+  1. In this folder, RIGHT-CLICK "EasyVimm.command".
+  2. Choose "Open" from the menu.
+  3. When macOS asks if you're sure, click "Open".
+  macOS will remember your choice from now on.
+
+
+RUN THE PYTHON LAUNCHER INSTEAD:
+  1. Press Cmd+Space, type "Terminal", press Enter.
+  2. Drag THIS folder into the Terminal window and press Enter.
+     (That switches Terminal into this folder.)
+  3. Type this and press Enter:
+        python3 EasyVimm.py
+
+
+PERMANENT FIX (one-time):
+  1. Open Terminal (Cmd+Space, type "Terminal", Enter).
+  2. Drag this folder into Terminal and press Enter.
+  3. Type this and press Enter:
+        chmod +x EasyVimm.command
+  From now on, double-clicking EasyVimm.command will work.
+
+
+NEED MORE HELP?
+  See the Quickstart section in README.md, or visit
+  https://github.com/routine88/easyvimm
