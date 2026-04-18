@@ -280,6 +280,32 @@ button.danger { background: var(--danger); border-color: var(--danger); color: w
   font-size: 0.9rem;
 }
 
+.help-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 0.75rem 0 1rem;
+  font-size: 0.9rem;
+}
+.help-panel h3 { margin: 0 0 0.5rem; font-size: 1rem; }
+.help-panel details {
+  border-top: 1px solid var(--border);
+  padding: 0.5rem 0;
+}
+.help-panel details:first-of-type { border-top: 0; padding-top: 0.25rem; }
+.help-panel summary {
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0.15rem 0;
+  outline: none;
+}
+.help-panel summary::marker { color: var(--accent); }
+.help-panel details[open] summary { color: var(--accent); }
+.help-panel p, .help-panel ul { margin: 0.3rem 0 0.4rem; }
+.help-panel ul { padding-left: 1.2rem; }
+.help-panel #help-close-btn { margin-top: 0.5rem; }
+
 .harvest-panel {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -418,5 +444,10 @@ footer {
   padding: 1rem 2rem;
   color: var(--muted);
   font-size: 0.85rem;
+}
+footer .legal {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  max-width: 60ch;
 }
 code { background: var(--panel); padding: 0.1rem 0.3rem; border-radius: 4px; }

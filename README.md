@@ -2,6 +2,12 @@
 
 A local, click-through ROM downloader for [Vimm's Lair](https://vimm.net/vault).
 
+> **Please read.** EasyVimm is a personal-use tool. You are responsible for
+> making sure anything you download is legal where you live. Downloading
+> ROMs for games you do not own may infringe copyright in many countries.
+> Common legitimate uses include preserving games whose physical copies you
+> already own, public-domain titles, and homebrew. When in doubt, don't.
+
 ## Why this exists
 
 Modern Vimm scrapers keep dying because the site is fronted by Cloudflare and
