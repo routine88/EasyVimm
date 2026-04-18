@@ -39,6 +39,22 @@ function formatSize(mb) {
   return `${Math.round(mb * 1000)} KB`;
 }
 
+// Rough human-time per ROM: locate, click, Cloudflare, click Download, wait
+// for the file. ~15 s per ROM is a realistic middle of the road.
+const SECONDS_PER_ROM = 15;
+
+function formatClickTime(games) {
+  const totalSeconds = games * SECONDS_PER_ROM;
+  const minutes = Math.round(totalSeconds / 60);
+  if (minutes < 1) return "less than a minute";
+  if (minutes < 60) {
+    const rounded = minutes < 10 ? minutes : Math.round(minutes / 5) * 5;
+    return `about ${rounded} minute${rounded === 1 ? "" : "s"} of clicking`;
+  }
+  const hours = Math.round((minutes / 60) * 2) / 2;  // nearest half-hour
+  return `about ${hours} hour${hours === 1 ? "" : "s"} of clicking`;
+}
+
 function estimateForConsoles(keys) {
   let games = 0;
   let mb = 0;
@@ -113,7 +129,7 @@ async function loadConsoles() {
     .map(([key]) => key);
   const classicEst = estimateForConsoles(classicKeys);
   $("preset-classic-six-estimate").textContent =
-    `${classicEst.games} games · about ${formatSize(classicEst.mb)}`;
+    `${classicEst.games} games · about ${formatSize(classicEst.mb)} · ${formatClickTime(classicEst.games)}`;
 
   updateSelectionSummary();
 }
@@ -151,7 +167,8 @@ function updateSelectionSummary() {
   const consoles = Array.from(state.selected)
     .map((k) => state.consoles[k]?.short_name || k)
     .join(", ");
-  el.textContent = `Picked: ${consoles} — ${est.games} games, about ${formatSize(est.mb)}.`;
+  el.textContent =
+    `Picked: ${consoles} — ${est.games} games, about ${formatSize(est.mb)}, ${formatClickTime(est.games)}.`;
   btn.disabled = false;
 }
 
