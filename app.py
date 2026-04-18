@@ -5,7 +5,7 @@ from pathlib import Path
 
 from flask import Flask, jsonify, request, send_from_directory
 
-from easyvimm.catalog import load_consoles, load_games
+from easyvimm.catalog import load_consoles, load_games, merge_vault_ids
 from easyvimm.config import load_config, save_config
 from easyvimm.sdcard import DeployJob, detect_candidates
 from easyvimm.session import DownloadSession
@@ -145,6 +145,17 @@ def api_sdcards_deploy():
 @app.get("/api/sdcards/deploy/status")
 def api_sdcards_deploy_status():
     return jsonify(deploy_job.snapshot())
+
+
+@app.post("/api/catalog/merge")
+def api_catalog_merge():
+    payload = request.get_json(force=True) or {}
+    try:
+        result = merge_vault_ids(DATA_DIR, payload)
+    except (OSError, ValueError) as exc:
+        return jsonify({"error": str(exc)}), 400
+    session.consoles = load_consoles(DATA_DIR)
+    return jsonify(result)
 
 
 def _open_browser_soon(url: str, delay: float = 1.0) -> None:

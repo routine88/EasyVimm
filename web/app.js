@@ -706,11 +706,97 @@ function wire() {
   $("notify-toggle").addEventListener("change", (e) => {
     state.soundsEnabled = e.target.checked;
   });
+  $("toggle-harvest").addEventListener("click", toggleHarvestPanel);
+  $("harvest-save-btn").addEventListener("click", saveHarvestedIds);
+  $("harvest-close-btn").addEventListener("click", toggleHarvestPanel);
+}
+
+const HARVEST_SNIPPET =
+  "(function(){" +
+    "var anchors=document.querySelectorAll('a[href*=\"/vault/\"]');" +
+    "var seen={},pairs=[];" +
+    "anchors.forEach(function(a){" +
+      "var m=(a.getAttribute('href')||'').match(/^\\/vault\\/(\\d+)/);" +
+      "if(!m)return;" +
+      "var title=(a.textContent||'').trim();" +
+      "if(!title||seen[m[1]])return;" +
+      "seen[m[1]]=true;" +
+      "pairs.push({title:title,vimm_id:parseInt(m[1],10)});" +
+    "});" +
+    "var sys=(location.pathname.match(/^\\/vault\\/([A-Za-z0-9]+)/)||[])[1]||'';" +
+    "var out=JSON.stringify({system:sys,pairs:pairs},null,2);" +
+    "function done(msg){alert(msg);}" +
+    "if(navigator.clipboard&&navigator.clipboard.writeText){" +
+      "navigator.clipboard.writeText(out).then(" +
+        "function(){done('EasyVimm: copied '+pairs.length+' game IDs to your clipboard. Paste them into EasyVimm.');}," +
+        "function(){window.prompt('Copy this JSON:',out);}" +
+      ");" +
+    "}else{window.prompt('Copy this JSON:',out);}" +
+  "})();";
+
+function installBookmarklet() {
+  const el = $("harvest-bookmarklet");
+  if (!el) return;
+  el.href = "javascript:" + encodeURIComponent(HARVEST_SNIPPET);
+  el.addEventListener("click", (e) => {
+    e.preventDefault();
+    alert(
+      "Drag this link up to your bookmarks bar instead of clicking it. " +
+      "Then open a Vimm vault page and click the bookmark.",
+    );
+  });
+}
+
+function toggleHarvestPanel() {
+  const panel = $("harvest-panel");
+  const btn = $("toggle-harvest");
+  panel.hidden = !panel.hidden;
+  btn.textContent = panel.hidden
+    ? "Teach EasyVimm the exact Vimm pages →"
+    : "Hide this";
+}
+
+async function saveHarvestedIds() {
+  const raw = ($("harvest-input").value || "").trim();
+  const result = $("harvest-result");
+  result.hidden = true;
+  if (!raw) {
+    return;
+  }
+  let payload;
+  try {
+    payload = JSON.parse(raw);
+  } catch (err) {
+    result.textContent = `That doesn't look like JSON: ${err.message}`;
+    result.hidden = false;
+    return;
+  }
+  try {
+    const resp = await api("/api/catalog/merge", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    const per = Object.entries(resp.by_console || {})
+      .map(([k, v]) => `${k}: ${v.matched} of ${v.total}`)
+      .join(" · ") || "no consoles matched";
+    result.textContent =
+      `Saved ${resp.matched} IDs. ${per}.` +
+      (resp.unmatched_consoles?.length
+        ? ` Unknown system: ${resp.unmatched_consoles.join(", ")}.`
+        : "");
+    result.hidden = false;
+    $("harvest-input").value = "";
+    await loadConsoles();
+  } catch (err) {
+    result.textContent = `Couldn't save: ${err.message}`;
+    result.hidden = false;
+  }
 }
 
 (async function init() {
   wire();
   await loadConfig();
   await loadConsoles();
+  installBookmarklet();
   await checkForPriorSession();
 })();

@@ -264,6 +264,49 @@ button.danger { background: var(--danger); border-color: var(--danger); color: w
   font-size: 0.9rem;
 }
 
+.harvest-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 0.75rem 0 1rem;
+  font-size: 0.9rem;
+}
+.harvest-panel h3 { margin: 0 0 0.4rem; font-size: 1rem; }
+.harvest-panel ol { padding-left: 1.25rem; line-height: 1.6; }
+.harvest-panel textarea {
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  resize: vertical;
+}
+.bookmarklet {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border: 1px dashed var(--accent);
+  border-radius: 4px;
+  color: var(--accent);
+  background: rgba(47, 129, 247, 0.08);
+  text-decoration: none;
+  cursor: grab;
+  margin: 0 0.15rem;
+}
+.bookmarklet:hover { background: rgba(47, 129, 247, 0.18); }
+.harvest-result {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  background: rgba(46, 160, 67, 0.12);
+  border: 1px solid var(--success);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
 .resume-banner {
   background: linear-gradient(135deg, rgba(210, 153, 34, 0.2), rgba(210, 153, 34, 0.05));
   border: 1px solid var(--warn);

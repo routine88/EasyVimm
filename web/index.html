@@ -80,6 +80,37 @@
         Already have games downloaded?
         <button id="sd-from-setup-btn" class="link-button" type="button">Copy them to your SD card →</button>
       </p>
+
+      <p class="setup-footer-link">
+        Power users:
+        <button id="toggle-harvest" class="link-button" type="button">
+          Teach EasyVimm the exact Vimm pages →
+        </button>
+      </p>
+
+      <div id="harvest-panel" class="harvest-panel" hidden>
+        <h3>Skip the A–Z scan next time</h3>
+        <p>By default EasyVimm opens Vimm's A–Z list so you can find each game.
+          If you capture the exact vault IDs once, the app will jump straight to
+          each game's page after that — no searching.</p>
+        <ol>
+          <li>Drag this link to your browser's bookmarks bar:
+            <a id="harvest-bookmarklet" class="bookmarklet" href="#">EasyVimm: Grab IDs</a>
+          </li>
+          <li>Open a Vimm vault list — e.g.
+            <a href="https://vimm.net/vault/NES" target="_blank" rel="noopener">vimm.net/vault/NES</a>.
+            Solve any Cloudflare check.</li>
+          <li>Click the bookmark. It copies JSON of every title → vault-ID pair on that page to your clipboard.</li>
+          <li>Paste the JSON below and click <strong>Save IDs</strong>. Repeat once per console.</li>
+        </ol>
+        <textarea id="harvest-input" rows="6"
+          placeholder='{"system": "NES", "pairs": [{"title": "1942", "vimm_id": 69}]}'></textarea>
+        <div class="actions">
+          <button id="harvest-save-btn" class="primary">Save IDs</button>
+          <button id="harvest-close-btn">Close</button>
+        </div>
+        <p id="harvest-result" class="harvest-result" hidden></p>
+      </div>
     </section>
 
     <section id="session-panel" hidden>
