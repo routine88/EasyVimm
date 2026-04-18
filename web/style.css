@@ -206,6 +206,28 @@ button.danger { background: var(--danger); border-color: var(--danger); color: w
 .walkthrough li { padding-left: 0.25rem; }
 .walkthrough strong { color: var(--accent); }
 
+.stuck-nudge {
+  background: rgba(210, 153, 34, 0.12);
+  border: 1px solid var(--warn);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+.stuck-nudge p { margin: 0 0 0.35rem; font-weight: 600; }
+.stuck-nudge ul { margin: 0; padding-left: 1.2rem; }
+.stuck-nudge li { margin: 0.15rem 0; }
+
+.notify-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.notify-row input { margin: 0; }
+
 .download-state {
   display: flex;
   align-items: center;

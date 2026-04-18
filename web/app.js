@@ -7,7 +7,13 @@ const state = {
   sdCandidates: [],
   sdSelected: null,
   sdPollHandle: null,
+  waitingSince: 0,       // ms timestamp when we entered "waiting"
+  stuckPromptShown: false,
+  lastProgressState: null,
+  soundsEnabled: true,
 };
+
+const STUCK_AFTER_MS = 90_000;  // show nudge after 90s of waiting
 
 const STATUS_LABELS = {
   filed: "saved",
@@ -159,10 +165,23 @@ async function startSession() {
   $("setup-panel").hidden = true;
   $("done-panel").hidden = true;
   $("session-panel").hidden = false;
+  state.waitingSince = 0;
+  state.stuckPromptShown = false;
+  $("stuck-nudge").hidden = true;
+  requestNotificationPermission();
+  // Prime the audio context with this user gesture so later chimes are allowed.
+  try { playChime(440, 30); } catch (_err) {}
   renderStatus();
   startPolling();
   if (!state.config.auto_open_next && state.status.current) {
     openCurrent();
+  }
+}
+
+function requestNotificationPermission() {
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "default") {
+    try { Notification.requestPermission(); } catch (_e) {}
   }
 }
 
@@ -198,16 +217,99 @@ async function pollStatus() {
     const advanced = state.status && next.cursor > state.status.cursor;
     state.status = next;
     renderStatus();
-    if (advanced && state.config.auto_open_next && next.current) {
-      await fetch("/api/session/open_current", { method: "POST" });
+    if (advanced) {
+      onRomFiled(next);
+      if (state.config.auto_open_next && next.current) {
+        await fetch("/api/session/open_current", { method: "POST" });
+      }
     }
     if (!next.active) {
       clearInterval(state.pollHandle);
       state.pollHandle = null;
+      onSessionComplete();
       showDone();
     }
   } catch (err) {
     console.warn("poll failed", err);
+  }
+}
+
+function onRomFiled(snap) {
+  state.waitingSince = 0;
+  state.stuckPromptShown = false;
+  const hideNudge = $("stuck-nudge");
+  if (hideNudge) hideNudge.hidden = true;
+  if (!state.soundsEnabled) return;
+  playChime();
+  flashTitle(`✓ Saved ${snap.cursor}/${snap.total}`);
+  tryNotify(
+    "Game saved",
+    `${snap.cursor} of ${snap.total} done — ${snap.remaining} to go.`,
+  );
+}
+
+function onSessionComplete() {
+  if (!state.soundsEnabled) return;
+  playChime();
+  playChime(880, 180);
+  flashTitle("✓ All games saved!");
+  tryNotify("EasyVimm: all done!", "Your games are ready to copy to your SD card.");
+}
+
+let _titleTimer = null;
+function flashTitle(msg) {
+  if (_titleTimer) clearTimeout(_titleTimer);
+  const original = "EasyVimm";
+  document.title = `${msg}`;
+  _titleTimer = setTimeout(() => {
+    document.title = original;
+    _titleTimer = null;
+  }, 6000);
+}
+
+let _audioCtx = null;
+function playChime(freq = 660, durationMs = 150) {
+  try {
+    if (!_audioCtx) {
+      _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    const osc = _audioCtx.createOscillator();
+    const gain = _audioCtx.createGain();
+    osc.frequency.value = freq;
+    osc.type = "sine";
+    gain.gain.setValueAtTime(0.001, _audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.15, _audioCtx.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, _audioCtx.currentTime + durationMs / 1000);
+    osc.connect(gain).connect(_audioCtx.destination);
+    osc.start();
+    osc.stop(_audioCtx.currentTime + durationMs / 1000 + 0.05);
+  } catch (_err) {
+    // Audio can fail before the first user gesture; silent.
+  }
+}
+
+function tryNotify(title, body) {
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "granted") {
+    try { new Notification(title, { body, silent: true }); } catch (_e) {}
+  }
+}
+
+function evaluateStuckState(snap) {
+  const stateKey = (snap.current_progress || {}).state || "waiting";
+  if (stateKey !== "waiting") {
+    state.waitingSince = 0;
+    state.stuckPromptShown = false;
+    $("stuck-nudge").hidden = true;
+    return;
+  }
+  if (!state.waitingSince) {
+    state.waitingSince = Date.now();
+  }
+  const elapsed = Date.now() - state.waitingSince;
+  if (elapsed > STUCK_AFTER_MS && !state.stuckPromptShown) {
+    state.stuckPromptShown = true;
+    $("stuck-nudge").hidden = false;
   }
 }
 
@@ -233,6 +335,7 @@ function renderStatus() {
   }
 
   renderDownloadState(snap);
+  evaluateStuckState(snap);
 
   const list = $("history-list");
   list.innerHTML = "";
@@ -522,6 +625,9 @@ function wire() {
   $("sd-scan-btn").addEventListener("click", scanSdCards);
   $("sd-copy-btn").addEventListener("click", startSdCopy);
   $("sd-done-btn").addEventListener("click", closeSdPanel);
+  $("notify-toggle").addEventListener("change", (e) => {
+    state.soundsEnabled = e.target.checked;
+  });
 }
 
 (async function init() {

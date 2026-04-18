@@ -97,8 +97,10 @@
         <ol class="walkthrough">
           <li>A new tab will open to Vimm's game list.</li>
           <li>Look for <strong id="walkthrough-title">this game</strong> and click its name.</li>
-          <li>Click the big <strong>Download</strong> button on its page.</li>
-          <li>If a box says "Prove you're not a robot", click it.</li>
+          <li>If you see a list of regions, pick <strong>USA</strong> (or <strong>Europe</strong> if USA isn't there).</li>
+          <li>Click the big gray <strong>Download</strong> button on its page.</li>
+          <li>If you see a "Prove you're not a robot" box, click it.
+            A "Checking your browser…" page is fine — it clears itself.</li>
           <li>Wait. I'll see the file and save it for you.</li>
         </ol>
 
@@ -107,11 +109,25 @@
           <span id="state-text">Waiting for you to click Download…</span>
         </div>
 
+        <div id="stuck-nudge" class="stuck-nudge" hidden>
+          <p>This one is taking a while. Try one of these:</p>
+          <ul>
+            <li>Go back to the Vimm tab and make sure you clicked <strong>Download</strong>.</li>
+            <li>If the page got stuck, use the button below to open it again.</li>
+            <li>If the game just isn't there or Vimm says "too many downloads", click <strong>Skip this one</strong>.</li>
+          </ul>
+        </div>
+
         <div class="actions">
           <button id="open-btn" class="primary">Open download page</button>
           <button id="skip-btn">Skip this one</button>
           <button id="stop-btn" class="danger">Stop</button>
         </div>
+
+        <label class="notify-row">
+          <input id="notify-toggle" type="checkbox" checked />
+          Make a sound and flash the tab when each game is saved
+        </label>
       </div>
 
       <h3>What I've saved so far</h3>
