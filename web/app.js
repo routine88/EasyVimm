@@ -4,6 +4,9 @@ const state = {
   config: {},
   status: null,
   pollHandle: null,
+  sdCandidates: [],
+  sdSelected: null,
+  sdPollHandle: null,
 };
 
 const STATUS_LABELS = {
@@ -326,6 +329,131 @@ function applyClassicSix() {
   selectOnly(keys);
 }
 
+function showPanel(panelId) {
+  for (const id of ["setup-panel", "session-panel", "done-panel", "sdcard-panel"]) {
+    $(id).hidden = id !== panelId;
+  }
+}
+
+function openSdPanel() {
+  showPanel("sdcard-panel");
+  $("sd-candidates").innerHTML = "";
+  $("sd-copy-btn").hidden = true;
+  $("sd-copy-btn").disabled = true;
+  $("sd-progress-area").hidden = true;
+  $("sd-done-area").hidden = true;
+  state.sdSelected = null;
+  state.sdCandidates = [];
+  if (state.sdPollHandle) { clearInterval(state.sdPollHandle); state.sdPollHandle = null; }
+}
+
+function closeSdPanel() {
+  if (state.sdPollHandle) { clearInterval(state.sdPollHandle); state.sdPollHandle = null; }
+  showPanel("setup-panel");
+}
+
+async function scanSdCards() {
+  const btn = $("sd-scan-btn");
+  btn.disabled = true;
+  btn.textContent = "Looking…";
+  try {
+    const data = await api("/api/sdcards");
+    state.sdCandidates = data.candidates || [];
+    renderSdCandidates();
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Find my card again";
+  }
+}
+
+function renderSdCandidates() {
+  const container = $("sd-candidates");
+  container.innerHTML = "";
+  if (state.sdCandidates.length === 0) {
+    container.innerHTML =
+      `<p class="hint">I couldn't find any drives. Make sure the SD card is plugged in and try again.</p>`;
+    $("sd-copy-btn").hidden = true;
+    return;
+  }
+  for (const cand of state.sdCandidates) {
+    const row = document.createElement("div");
+    row.className = "sd-card-option";
+    row.dataset.path = cand.path;
+    const badgeClass = cand.confidence > 0 ? `confidence-${cand.confidence}` : "";
+    const size = cand.total_gb ? `${cand.total_gb} GB` : "";
+    const free = cand.free_gb != null ? `, ${cand.free_gb} GB free` : "";
+    row.innerHTML = `
+      <div class="sd-card-left">
+        <div class="sd-card-name">${cand.label}${size ? " — " + size + free : ""}</div>
+        <div class="sd-card-path">${cand.path}</div>
+      </div>
+      <div class="sd-card-badge ${badgeClass}">${cand.confidence ? "Likely your card" : "Unknown"}</div>
+    `;
+    row.addEventListener("click", () => selectSdCandidate(cand.path));
+    container.appendChild(row);
+  }
+  const best = state.sdCandidates.find((c) => c.confidence >= 2);
+  if (best) selectSdCandidate(best.path);
+  $("sd-copy-btn").hidden = false;
+}
+
+function selectSdCandidate(path) {
+  state.sdSelected = path;
+  document.querySelectorAll(".sd-card-option").forEach((el) => {
+    el.classList.toggle("selected", el.dataset.path === path);
+  });
+  $("sd-copy-btn").disabled = false;
+}
+
+async function startSdCopy() {
+  if (!state.sdSelected) return;
+  const btn = $("sd-copy-btn");
+  btn.disabled = true;
+  btn.textContent = "Copying…";
+  $("sd-progress-area").hidden = false;
+  $("sd-done-area").hidden = true;
+  $("sd-progress-fill").style.width = "0%";
+  $("sd-progress-text").textContent = "Starting copy…";
+  await api("/api/sdcards/deploy", {
+    method: "POST",
+    body: JSON.stringify({ mount: state.sdSelected }),
+  });
+  if (state.sdPollHandle) clearInterval(state.sdPollHandle);
+  state.sdPollHandle = setInterval(pollSdProgress, 800);
+}
+
+async function pollSdProgress() {
+  let snap;
+  try {
+    snap = await api("/api/sdcards/deploy/status");
+  } catch (err) {
+    return;
+  }
+  const pct = snap.total ? (snap.copied + snap.skipped + snap.failed) / snap.total * 100 : 0;
+  $("sd-progress-fill").style.width = `${pct}%`;
+  if (snap.state === "copying") {
+    const done = snap.copied + snap.skipped + snap.failed;
+    const parts = [`Copying ${done} of ${snap.total}`];
+    if (snap.current) parts.push(`now: ${snap.current}`);
+    $("sd-progress-text").textContent = parts.join(" — ");
+  } else if (snap.state === "done") {
+    clearInterval(state.sdPollHandle);
+    state.sdPollHandle = null;
+    $("sd-progress-text").textContent = snap.message || "Done.";
+    $("sd-copy-btn").hidden = true;
+    $("sd-done-area").hidden = false;
+    $("sd-done-text").textContent =
+      `✓ ${snap.message || `Copied ${snap.copied} games.`} You can safely eject your SD card.`;
+  } else if (snap.state === "error") {
+    clearInterval(state.sdPollHandle);
+    state.sdPollHandle = null;
+    $("sd-progress-text").textContent = `Problem: ${snap.message || "copy failed"}.`;
+    $("sd-copy-btn").hidden = false;
+    $("sd-copy-btn").disabled = false;
+    $("sd-copy-btn").textContent = "Try again";
+  }
+}
+
 function wire() {
   $("save-config-btn").addEventListener("click", saveConfig);
   $("toggle-advanced").addEventListener("click", toggleAdvanced);
@@ -336,6 +464,12 @@ function wire() {
   $("skip-btn").addEventListener("click", skipCurrent);
   $("stop-btn").addEventListener("click", stopSession);
   $("restart-btn").addEventListener("click", restart);
+  $("sd-from-setup-btn").addEventListener("click", openSdPanel);
+  $("sd-from-done-btn").addEventListener("click", openSdPanel);
+  $("sd-back-btn").addEventListener("click", closeSdPanel);
+  $("sd-scan-btn").addEventListener("click", scanSdCards);
+  $("sd-copy-btn").addEventListener("click", startSdCopy);
+  $("sd-done-btn").addEventListener("click", closeSdPanel);
 }
 
 (async function init() {

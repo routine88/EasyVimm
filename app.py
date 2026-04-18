@@ -7,6 +7,7 @@ from flask import Flask, jsonify, request, send_from_directory
 
 from easyvimm.catalog import load_consoles, load_games
 from easyvimm.config import load_config, save_config
+from easyvimm.sdcard import DeployJob, detect_candidates
 from easyvimm.session import DownloadSession
 
 ROOT = Path(__file__).parent
@@ -17,6 +18,7 @@ STATIC_DIR = ROOT / "web"
 app = Flask(__name__, static_folder=None)
 config = load_config(CONFIG_PATH)
 session = DownloadSession(DATA_DIR, config)
+deploy_job = DeployJob()
 
 
 def watcher_loop():
@@ -99,6 +101,33 @@ def api_open_current():
         return jsonify({"opened": False})
     webbrowser.open_new_tab(current["url"])
     return jsonify({"opened": True, "url": current["url"]})
+
+
+@app.get("/api/sdcards")
+def api_sdcards():
+    return jsonify({"candidates": detect_candidates()})
+
+
+@app.post("/api/sdcards/deploy")
+def api_sdcards_deploy():
+    payload = request.get_json(force=True)
+    mount_raw = payload.get("mount", "").strip()
+    if not mount_raw:
+        return jsonify({"error": "missing mount"}), 400
+    mount = Path(mount_raw)
+    if not mount.exists():
+        return jsonify({"error": f"{mount_raw} does not exist"}), 400
+    snap = deploy_job.start(
+        Path(config["output_folder"]),
+        mount,
+        config["naming_convention"],
+    )
+    return jsonify(snap)
+
+
+@app.get("/api/sdcards/deploy/status")
+def api_sdcards_deploy_status():
+    return jsonify(deploy_job.snapshot())
 
 
 def _open_browser_soon(url: str, delay: float = 1.0) -> None:

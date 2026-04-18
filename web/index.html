@@ -66,6 +66,11 @@
 
       <div id="selection-summary" class="selection-summary">Pick at least one console.</div>
       <button id="start-btn" class="primary big" disabled>Let's get these games</button>
+
+      <p class="setup-footer-link">
+        Already have games downloaded?
+        <button id="sd-from-setup-btn" class="link-button" type="button">Copy them to your SD card →</button>
+      </p>
     </section>
 
     <section id="session-panel" hidden>
@@ -107,7 +112,41 @@
     <section id="done-panel" hidden>
       <h2>All done!</h2>
       <p id="done-summary">—</p>
-      <button id="restart-btn">Pick more games</button>
+      <div class="actions">
+        <button id="sd-from-done-btn" class="primary">Put them on my SD card →</button>
+        <button id="restart-btn">Pick more games</button>
+      </div>
+    </section>
+
+    <section id="sdcard-panel" hidden>
+      <h2>Put your games on your Miyoo card</h2>
+
+      <ol class="walkthrough">
+        <li>Plug your Miyoo's SD card into your computer (use the little SD adapter).</li>
+        <li>Wait a few seconds for your computer to notice it.</li>
+        <li>Click <strong>Find my card</strong>.</li>
+      </ol>
+
+      <div class="actions">
+        <button id="sd-scan-btn" class="primary">Find my card</button>
+        <button id="sd-back-btn">Back</button>
+      </div>
+
+      <div id="sd-candidates" class="sd-candidates"></div>
+
+      <button id="sd-copy-btn" class="primary big" hidden disabled>
+        Copy my games to this card
+      </button>
+
+      <div id="sd-progress-area" hidden>
+        <div id="sd-progress-bar"><div id="sd-progress-fill"></div></div>
+        <p id="sd-progress-text">—</p>
+      </div>
+
+      <div id="sd-done-area" hidden>
+        <p id="sd-done-text">—</p>
+        <button id="sd-done-btn" class="primary">Done</button>
+      </div>
     </section>
   </main>
 

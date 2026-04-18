@@ -236,6 +236,64 @@ button.danger { background: var(--danger); border-color: var(--danger); color: w
   50%      { opacity: 0.45; transform: scale(1.35); }
 }
 
+.setup-footer-link {
+  margin-top: 1.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.sd-candidates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+.sd-card-option {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.sd-card-option:hover { border-color: var(--accent); }
+.sd-card-option.selected { border-color: var(--accent); background: rgba(47, 129, 247, 0.12); }
+.sd-card-option .sd-card-left { display: flex; flex-direction: column; gap: 0.15rem; }
+.sd-card-option .sd-card-name { font-weight: 600; }
+.sd-card-option .sd-card-path { font-size: 0.8rem; color: var(--muted); word-break: break-all; }
+.sd-card-badge {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.sd-card-badge.confidence-3 { background: var(--success); color: white; border-color: var(--success); }
+.sd-card-badge.confidence-2 { background: var(--accent); color: white; border-color: var(--accent); }
+.sd-card-badge.confidence-1 { background: var(--warn); color: white; border-color: var(--warn); }
+
+#sd-progress-area, #sd-done-area { margin-top: 1rem; }
+#sd-progress-bar {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  height: 14px;
+  overflow: hidden;
+}
+#sd-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.3s;
+}
+#sd-progress-text, #sd-done-text { color: var(--muted); margin: 0.4rem 0 0; }
+
 .history { list-style: none; padding: 0; margin: 0.5rem 0 0; }
 .history li {
   background: var(--panel);
