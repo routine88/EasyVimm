@@ -1,3 +1,4 @@
+import logging
 import socket
 import threading
 import time
@@ -208,6 +209,16 @@ def main():
     if port != 5000:
         print(f"  [i] Port 5000 was in use, so EasyVimm moved to port {port}.")
         print("")
+
+    # Werkzeug prints a scary "This is a development server" banner and logs
+    # every single request. We're deliberately a local single-user tool, so
+    # silence both so the launcher window stays friendly.
+    logging.getLogger("werkzeug").setLevel(logging.ERROR)
+    try:
+        from flask import cli as flask_cli
+        flask_cli.show_server_banner = lambda *args, **kwargs: None
+    except Exception:  # noqa: BLE001
+        pass
 
     _open_browser_soon(url)
     app.run(host="127.0.0.1", port=port, debug=False, use_reloader=False)
